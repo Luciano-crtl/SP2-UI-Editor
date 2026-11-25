@@ -383,7 +383,7 @@ namespace SP2UIEditor
                 float pw = part.width * full.width, ph = part.height * full.height;
                 int width = Mathf.Clamp(Mathf.Min((int?)job.Body["w"] ?? 1280, (int)pw), 16, 2560);
                 int height = Mathf.Clamp(Mathf.RoundToInt(width * ph / pw), 1, 4096);
-                rt = RenderTexture.GetTemporary(width, height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB);
+                rt = RenderTexture.GetTemporary(width, height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Linear);
                 Graphics.Blit(full, rt, new Vector2(part.width, part.height), new Vector2(part.x, part.y));
                 RenderTexture active = RenderTexture.active;
                 RenderTexture.active = rt;
