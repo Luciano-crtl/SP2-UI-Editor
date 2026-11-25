@@ -529,6 +529,12 @@ namespace SP2UIEditor
             }
         }
 
+        // Is it on a widget that exists now? (A style or constant always is.)
+        public static bool AppliedNow(Op op)
+        {
+            return op.Do == "style" || op.Do == "constant" || applied.Any(d => d.Op == op && Tree.Get(d.Step.Handle) != null) || LiveEditor.History.Done.Any(s => s.Op == op);
+        }
+
         public static void UnapplyAll() { Unapply(d => true); }
     }
 }

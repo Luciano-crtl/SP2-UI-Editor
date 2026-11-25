@@ -71,6 +71,29 @@ namespace SP2UIEditor
     {
         public override bool IsModal { get { return false; } }
 
+        private readonly System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<TextControl, Package>> rows = new System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<TextControl, Package>>();
+        private float next;
+
+        // "Designer, FlightUI": the screens it changes.
+        private static string Where(Package p)
+        {
+            string[] files = p.Ops.SelectMany(o => o.Bases()).Select(b => Sources.FileOf(b.Substring(4))).Where(f => f != null && !f.StartsWith("SP2UI/")).Select(f => f.Substring(f.LastIndexOf('/') + 1)).Distinct().Take(4).ToArray();
+            string s = string.Join(", ", files);
+            if (p.Ops.Any(o => o.Do == "style" || o.Do == "constant")) s = s.Length == 0 ? "all screens" : s + ", styles";
+            return s.Length == 0 ? "panels" : s;
+        }
+
+        private void Update()
+        {
+            if (Time.unscaledTime < next) return;
+            next = Time.unscaledTime + 0.5f;
+            foreach (var r in rows)
+            {
+                int now = r.Value.Ops.Count(o => Packages.AppliedNow(o));
+                r.Key.ValueText.Text = !Packages.Enabled(r.Value) ? "off" : now > 0 ? now + " on this screen" : "not on this screen";
+            }
+        }
+
         public override void OnWidgetInitialized(Widget widget)
         {
             base.OnWidgetInitialized(widget);
@@ -90,6 +113,10 @@ namespace SP2UIEditor
                     EditorPlugin.Log.LogWarning("[UIEDIT] " + name + ": " + problem);
                     t.IsOn = Packages.Enabled(p);
                 };
+                // what it changes, so that nobody wonders why nothing happens on another screen
+                TextControl info = new TextControl(list.Context.CreateWidgetFromTemplate("control-text", list));
+                info.LabelText = p.Ops.Count + " edits: " + Where(p);
+                rows.Add(new System.Collections.Generic.KeyValuePair<TextControl, Package>(info, p));
             }
         }
     }
