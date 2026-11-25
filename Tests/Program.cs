@@ -113,6 +113,9 @@ internal static class Program
         }
         XElement v1 = XElement.Parse("<Xml><Widgets><Empty><Button id='a'/><Text text='t'/></Empty></Widgets></Xml>"), v2 = XElement.Parse("<Xml><Widgets><Empty><Image/><Button id='a'/><Text text='t'/></Empty></Widgets></Xml>");
         Check(Op.Locate("src:F#0.0.0", Op.Print(Sources.Find(v1, "F#0.0.0")), v2) == "src:F#0.0.1", "an element with an id is found after the layout changed");
+        XElement r1 = XElement.Parse("<Xml><Widgets><Empty><Row><Image id='x'/></Row><Row><Image id='y'/></Row></Empty></Widgets></Xml>"), r2 = XElement.Parse("<Xml><Widgets><Empty><Spacer/><Row><Image id='x'/></Row><Row><Image id='new'/><Image id='y'/></Row></Empty></Widgets></Xml>");
+        Check(Op.Locate("src:F#0.0.1", Op.Print(Sources.Find(r1, "F#0.0.1")), r2) == "src:F#0.0.2", "a row without an id is found by what is in it");
+        Check(Op.Locate("src:F#0.0.1", "Row;;", r2) == "src:F#0.0.1", "a print of the first version still reads");
         Check(Op.Locate("src:F#0.0.1", Op.Print(Sources.Find(v1, "F#0.0.1")), v2) == null, "one without an id is lost, not confused");
 
         History h = new History();

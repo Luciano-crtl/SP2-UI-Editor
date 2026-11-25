@@ -65,7 +65,19 @@ namespace SP2UIEditor
         // How an element of a layout is recognized: kind, id and the words it was written with.
         public static string Print(XElement e)
         {
-            return e.Name.LocalName + ";" + (string)e.Attribute("id") + ";" + ((string)e.Attribute("text") ?? (string)e.Attribute("title") ?? (string)e.Attribute("templateId"));
+            return e.Name.LocalName + ";" + (string)e.Attribute("id") + ";" + ((string)e.Attribute("text") ?? (string)e.Attribute("title") ?? (string)e.Attribute("templateId") ?? "").Replace(';', ',')
+                 + ";" + string.Join(",", e.Descendants().Select(x => (string)x.Attribute("id")).Where(x => !string.IsNullOrEmpty(x)).Take(12));
+        }
+
+        // The same element? One without id or words is told by the ids inside it (a mod may have added or taken some: one in common is enough).
+        public static bool Same(string saved, string now)
+        {
+            if (saved == null) return true;
+            string[] a = saved.Split(';'), b = now.Split(';');
+            for (int i = 0; i < 3; i++) if ((i < a.Length ? a[i] : "") != (i < b.Length ? b[i] : "")) return false;
+            if (a.Length < 4) return true;
+            string[] x = a[3].Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries), y = b[3].Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            return x.Length == 0 || x.Intersect(y).Any();
         }
 
         // Where the element a base identity names is now: the same place if it still looks the same, else the only element with its id. Null = lost.
@@ -73,10 +85,10 @@ namespace SP2UIEditor
         {
             string src = baseIdentity.Substring(4);
             XElement e = Sources.Find(raw, src);
-            if (e != null && (print == null || Print(e) == print)) return baseIdentity;
+            if (e != null && Same(print, Print(e))) return baseIdentity;
             string[] p = (print ?? "").Split(';');
-            if (p.Length < 2 || p[1].Length == 0) return null;
-            List<XElement> same = raw.Descendants().Where(x => (string)x.Attribute("id") == p[1] && x.Name.LocalName == p[0] && !Sources.InTemplate(x)).ToList();
+            if (p.Length < 2 || (p[1].Length == 0 && (p.Length < 4 || p[3].Length == 0))) return null;
+            List<XElement> same = raw.Descendants().Where(x => (p[1].Length > 0 ? (string)x.Attribute("id") == p[1] && x.Name.LocalName == p[0] : Same(print, Print(x))) && !Sources.InTemplate(x)).ToList();
             if (same.Count != 1) return null;
             List<int> place = new List<int>();
             for (XElement at = same[0]; at.Parent != null; at = at.Parent) place.Insert(0, at.ElementsBeforeSelf().Count());
