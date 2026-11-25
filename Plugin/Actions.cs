@@ -158,7 +158,8 @@ namespace SP2UIEditor
 
         public static IEnumerable<BaseUnityPlugin> Mods()
         {
-            return UnityEngine.Object.FindObjectsByType<BaseUnityPlugin>(FindObjectsInactive.Include, FindObjectsSortMode.None).Where(p => Meta(p) != null);
+            // All, not FindObjectsByType: that one leaves out hidden objects, and the Script Engine keeps its mods on one
+            return Resources.FindObjectsOfTypeAll<BaseUnityPlugin>().Where(p => p != null).Where(p => Meta(p) != null);
         }
 
         // Mods loaded by the Script Engine (F6) may have no Info: what their class says of itself is always there.
