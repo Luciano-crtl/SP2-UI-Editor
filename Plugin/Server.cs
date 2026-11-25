@@ -237,7 +237,7 @@ namespace SP2UIEditor
             return w;
         }
 
-        private static readonly string[] Edits = { "set", "class", "add", "move", "delete", "undo", "redo", "save", "package_new", "package_use", "package_enable", "package_drop", "package_order", "action", "panel_new", "panel_open", "panel_close", "panel_remove" };
+        private static readonly string[] Edits = { "set", "class", "add", "move", "delete", "undo", "redo", "save", "package_new", "package_use", "package_enable", "package_drop", "package_order", "action", "panel_new", "panel_open", "panel_close", "panel_remove", "style", "export" };
 
         private JToken Answer(Job job)
         {
@@ -281,6 +281,10 @@ namespace SP2UIEditor
                     return Result(LiveEditor.Move(w, b["parent"] != null ? Wanted(b, "parent") : w.Parent, (int?)b["index"] ?? -1, job.Author));
                 }
                 case "delete": return Result(LiveEditor.Delete(Wanted(b), job.Author));
+                case "styles": return Styles.Describe(Wanted(b));
+                case "style": return Result(LiveEditor.Shared(Wanted(b), (string)b["target"], (string)b["name"], (string)b["value"], job.Author));
+                case "methods": return Methods.List(Wanted(b));
+                case "export": return Packages.Export((string)b["name"]);
                 case "configs": return Actions.Configs();
                 case "mod_actions": return new JArray(UiActions.All.Keys.OrderBy(x => x));
                 case "panels": return Panels.Describe();

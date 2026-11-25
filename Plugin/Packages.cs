@@ -171,6 +171,7 @@ namespace SP2UIEditor
 
         private static void SaveState()
         {
+            changed++;
             JObject o = new JObject
             {
                 ["order"] = new JArray(All.Select(p => p.Name)),
@@ -285,6 +286,7 @@ namespace SP2UIEditor
             try { p.Write(p.Path); }
             catch (Exception e) { p.Ops = before; return e.Message; }
             Unapply(d => gone.Contains(d.Op));
+            changed++;
             Panels.CloseMissing();
             return null;
         }
@@ -316,7 +318,7 @@ namespace SP2UIEditor
                     ["ops"] = new JArray(p.Ops.Select(o => new JObject
                     {
                         ["text"] = o.Text,
-                        ["state"] = LiveEditor.History.Done.Any(s => s.Op == o) ? "session" : o.Orphan != null ? "orphan" : o.Applied > 0 || o.Do == "panel" ? "applied" : "waiting",
+                        ["state"] = LiveEditor.History.Done.Any(s => s.Op == o) ? "session" : o.Orphan != null ? "orphan" : o.Applied > 0 || o.Do == "panel" || o.Do == "style" || o.Do == "constant" ? "applied" : "waiting",
                         ["why"] = o.Orphan,
                     })),
                 })),
@@ -344,6 +346,16 @@ namespace SP2UIEditor
             return found;
         }
 
+        public static JObject Export(string name)
+        {
+            Package p = Find(name);
+            Exporter x = Exporter.Run(p, Panels.Layout);
+            string folder = Path.Combine(BepInEx.Paths.ConfigPath, "SP2UIEditor", "export", Package.SafeFileName(p.Name));
+            Directory.CreateDirectory(folder);
+            foreach (KeyValuePair<string, string> f in x.Files) File.WriteAllText(Path.Combine(folder, f.Key), f.Value);
+            return new JObject { ["ok"] = true, ["folder"] = folder, ["files"] = new JArray(x.Files.Keys), ["left"] = new JArray(x.Left) };
+        }
+
         // ---- applying ----
 
         // From the patch on CreateWidget: only noted; the widget is complete when the frame is over.
@@ -351,8 +363,16 @@ namespace SP2UIEditor
 
         public static void Mark(Widget w, Op op) { if (op != null) marks.GetOrCreateValue(w).Ops.Add(op); }
 
+        private static int styleVersion = -1, changed;
+
         public static void Tick()
         {
+            if (Time.frameCount >= walkAt && styleVersion != LiveEditor.History.Version * 1000 + changed)
+            {
+                styleVersion = LiveEditor.History.Version * 1000 + changed;
+                try { Styles.Sync(Live()); }
+                catch (Exception e) { EditorPlugin.Log.LogError("[UIEDIT] styles: " + e); }
+            }
             if (Time.frameCount < walkAt || (!walk && created.Count == 0)) return;
             List<KeyValuePair<Package, Op>> ops = new List<KeyValuePair<Package, Op>>();
             foreach (Package p in All)
@@ -371,7 +391,7 @@ namespace SP2UIEditor
             else look = created.Where(w => w != null && w.Stylesheet != null).ToList();
             created.Clear();
             walk = false;
-            ops.RemoveAll(o => o.Value.Do == "panel");
+            ops.RemoveAll(o => o.Value.Do == "panel" || o.Value.Do == "style" || o.Value.Do == "constant");
             if (ops.Count == 0 || look.Count == 0) return;
             try { Apply(ops, look); }
             catch (Exception e) { EditorPlugin.Log.LogError("[UIEDIT] applying packages: " + e); }
@@ -450,7 +470,9 @@ namespace SP2UIEditor
                     Mark(w, op);
                     Widget made;
                     Step step;
+                    Actions.Owner = o.Key != null ? o.Key.Name : null;
                     string problem = LiveEditor.Replay(op, w, op.Do == "move" ? FindParent(w, Now(op, op.Parent)) : null, out step, out made);
+                    Actions.Owner = null;
                     if (problem != null)
                     {
                         if (op.Orphan == null) EditorPlugin.Log.LogWarning("[UIEDIT] " + op.Text + ": " + problem);

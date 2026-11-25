@@ -1,6 +1,6 @@
 # SP2 UI Editor
 
-Edita a interface do SimplePlanes 2 (Juicy UI) com o jogo aberto. Fases 1 a 4 do plano: ver, editar ao vivo e salvar em pacotes (`BepInEx/config/SP2UIEditor/packages/*.sp2ui`).
+Edita a interface do SimplePlanes 2 (Juicy UI) com o jogo aberto. Fases 1 a 5 do plano: ver, editar ao vivo e salvar em pacotes (`BepInEx/config/SP2UIEditor/packages/*.sp2ui`).
 
 | Pasta | O que é |
 |---|---|
@@ -38,4 +38,6 @@ Classes e itens removidos podem não voltar exatamente ao desfazer (a lista de m
 
 Pacotes (fase 3): cada edição guarda a identidade do elemento e é refeita quando o jogo monta a tela (um quadro depois). Elemento que não existe mais vira órfão; nunca muda outro. Testado no Designer com F6 e reinício (`Tests/live_packages.py`). Não feito: "manter o meu" para textos que o jogo reescreve.
 
-Painéis e ações (fase 4): um painel é um layout servido em `SP2UI/<uid>`; ações `panel`, `element`, `link` (só http/https, com confirmação), `config`, `variable`, `mod` (`SP2UIEditor.UiActions.Register`). Nenhuma executa código do pacote. Só compilado e testado com o servidor falso; teste no jogo: `Tests/live_panel.py`.
+Painéis e ações (fase 4): um painel é um layout servido em `SP2UI/<uid>`; ações `panel`, `element`, `link` (só http/https, com confirmação), `config`, `variable`, `mod` (`SP2UIEditor.UiActions.Register`). Nenhuma executa código do pacote. Testado no voo (`Tests/live_panel.py`), sem cliques reais.
+
+Fase 5: estilos e constantes compartilhados (`Plugin/Styles.cs`), métodos do jogo (`Core/Calls.cs` diz quais; só rodam depois que o jogador aprova aquela chamada num diálogo do jogo, no primeiro clique; aprovação por chamada, em `trust.json`) e exportação (`Core/Exporter.cs`, em `BepInEx/config/SP2UIEditor/export`). Teste no jogo: `Tests/live_phase5.py`. O C# exportado compila; não rodou no jogo. Ações de configuração, variável, elemento, mod e método não são exportadas (o arquivo lista).

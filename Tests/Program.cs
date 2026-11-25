@@ -8,6 +8,25 @@ using SP2UIEditor;
 
 // The core, tried on the game's own layouts (read from its resources.assets each time; nothing of the game is kept).
 //   dotnet run --project Tests -- "C:\...\SimplePlanes 2_Data\resources.assets"
+namespace Assets.Scripts
+{
+    public class Fake
+    {
+        public void Jump(float height, bool twice) { }
+        public void Turn() { }
+        public int Returns() { return 1; }
+        public void SaveAll() { }
+        public void Takes(object o) { }
+        public void Many(int a, int b, int c, int d) { }
+        public static void Static() { }
+        private void Private() { }
+        public void Generic<T>() { }
+        public int Property { get; set; }
+    }
+}
+
+namespace Elsewhere { public class Fake2 { public void Turn() { } } }
+
 internal static class Program
 {
     private static int failed;
@@ -94,6 +113,45 @@ internal static class Program
             new Op { Do = "action", Target = "src:F#1", Name = "panel", Args = D("panel", "p1") }, new Op { Do = "action", Target = "src:F#2", Name = "panel", Args = D("panel", "p2") }, new Op { Do = "remove", Target = "panel:p1" } };
         Check(Package.Compact(pops).Select(o => o.Target).SequenceEqual(new[] { "panel:p2", "src:F#2" }), "a removed panel takes its contents and the buttons' actions along");
         Check(Package.Compact(new[] { new Op { Do = "action", Target = "a", Name = "link" }, new Op { Do = "action", Target = "a", Name = "none" } }).Count == 0, "no action");
+
+        // shared styles
+        Op St(string t, string n, string v) { return new Op { Do = t.StartsWith("const:") ? "constant" : "style", Target = t, Name = n, Value = v, Text = n }; }
+        Check(St("style:btn", "color", "#fff000").Problem() == null && St("style:a b", "color", "@X").Problem() == null && St("const:ColorPrimary", "Value", "#fff000").Problem() == null, "styles");
+        Check(St("style:btn", "onClick", "x").Problem() != null && St("style:btn", "script", "x").Problem() != null && St("const:A b", "Value", "1").Problem() != null && St("style:", "color", "1").Problem() != null && St("const:A", "Value", "{x}").Problem() != null, "unsafe styles");
+        Check(Package.Compact(new[] { St("style:btn", "color", "1"), St("style:btn", "color", "2"), St("style:btn", "width", "3") }).Count == 2, "a style's last value counts");
+
+        // methods
+        Check(Calls.Words("SaveCraftXMLFile2Now").SequenceEqual(new[] { "save", "craft", "xml", "file", "now" }), string.Join(",", Calls.Words("SaveCraftXMLFile2Now")));
+        foreach (string good in new[] { "ToggleWindSettings", "ShowMessageless", "SetPaused", "RecenterView", "Typewriter" }) Check(Calls.NameAllowed(good), good);
+        foreach (string bad in new[] { "SaveCraft", "QuitGame", "DeleteFile", "OpenURL", "LoadFromPath", "KickPlayer", "SendChat", "RunCommand", "a b", "x;y", "", "RpcDamage" }) Check(!Calls.NameAllowed(bad), bad + " was allowed");
+        List<string> sigs = Calls.Of(typeof(Assets.Scripts.Fake)).Select(Calls.Signature).ToList();
+        Check(sigs.SequenceEqual(new[] { "Jump(float height, bool twice)", "Turn()" }), "methods: " + string.Join(" | ", sigs));
+        Check(Calls.Of(typeof(string)).Count == 0 && Calls.Of(typeof(Elsewhere.Fake2)).Count == 0, "methods of other code");
+        var jump = typeof(Assets.Scripts.Fake).GetMethod("Jump").GetParameters();
+        Check((float)Calls.Convert("1.5", jump[0]) == 1.5f && (bool)Calls.Convert("true", jump[1]), "arguments");
+        foreach (string bad in new[] { "x", null, "NaN" }) { bool threw = false; try { Calls.Convert(bad, jump[0]); } catch (Exception) { threw = true; } Check(threw, "argument " + bad); }
+        Check(Op.ActionProblem("method", D("root", "flight", "method", "Turn()")) == null && Op.ActionProblem("method", D("root", "x", "method", "Turn()")) != null && Op.ActionProblem("method", D("root", "game", "method", "QuitGame()")) != null && Op.ActionProblem("method", D("root", "game", "method", "Turn()", "extra", "1")) != null, "method actions");
+        string fp = Calls.Fingerprint("P", "t", D("method", "Turn()", "a0", "1"));
+        Check(fp == Calls.Fingerprint("P", "t", D("a0", "1", "method", "Turn()")) && fp != Calls.Fingerprint("P2", "t", D("method", "Turn()", "a0", "1")) && fp != Calls.Fingerprint("P", "u", D("method", "Turn()", "a0", "1")) && fp != Calls.Fingerprint("P", "t", D("method", "Turn()", "a0", "2")), "approvals");
+
+        // export
+        XElement Lay(Op o) { return XElement.Parse("<Xml><Stylesheets/><Widgets><Instance templateId='dialog' script='X' title='" + o.Name + "'><Section sectionId='content'><VerticalLayout id='sp2ui-content'/></Section></Instance></Widgets></Xml>"); }
+        Package ex = new Package { Name = "Minha UI", Ops = { Panel("p1"),
+            new Op { Do = "add", Target = "src:SP2UI/p1#1.0.0.0", Uid = "u1", Xml = "<Button class='btn'><Text text='A'/></Button>", Text = "add" },
+            S("add:u1|n:Text", "text", "B \"q\" \u00e7"), new Op { Do = "class", Target = "add:u1", Name = "btn-primary" }, new Op { Do = "action", Target = "add:u1", Name = "link", Args = D("url", "https://a.b") },
+            new Op { Do = "add", Target = "src:SP2UI/p1#1.0.0.0", Uid = "u2", Index = 0, Xml = "<Instance templateId='control-toggle' label='L'/>" }, new Op { Do = "action", Target = "add:u2", Name = "config", Args = D("plugin", "a", "section", "b", "key", "c"), Text = "toggle" },
+            new Op { Do = "set", Target = "src:Xml/Design/Designer#1.0", Name = "color", Value = "#fff000", Prints = D("src:Xml/Design/Designer#1.0", "Button;b;") },
+            new Op { Do = "set", Target = "src:Xml/X#1.0|#inner", Name = "color", Value = "#fff000", Text = "inside a template" },
+            St("style:btn", "color", "#123456"), St("const:ColorPrimary", "Value", "#654321") } };
+        Check(ex.Ops.All(o => o.Problem() == null), "the export's package is good");
+        Exporter xp = Exporter.Run(ex, Lay);
+        Check(xp.Files.Count == 2 && xp.Left.Count == 2, "export: " + xp.Files.Count + " files, left: " + string.Join(" / ", xp.Left));
+        XElement px = XElement.Parse(xp.Files.First(f => f.Key.EndsWith(".xml")).Value);
+        Check(px.Descendants("Button").Single().ToString(SaveOptions.DisableFormatting) == "<Button class=\"btn btn-primary\" id=\"ui-u1\"><Text text=\"B &quot;q&quot; \u00e7\" /></Button>", "exported button: " + px.Descendants("Button").Single());
+        Check(px.Descendants("VerticalLayout").Single().Elements().First().Name == "Instance", "exported order");
+        string cs = xp.Files.First(f => f.Key.EndsWith(".cs")).Value;
+        Check(cs.Contains("OpenURL(\"https://a.b\")") && cs.Contains("style:btn color") && cs.Contains("inside a template") && !cs.Contains("%"), "exported code");
+        if (args.Length > 1) System.IO.File.WriteAllText(args[1], cs);
 
         // packages
         Op S(string t, string n, string v) { return new Op { Do = "set", Target = t, Name = n, Value = v, Text = n }; }

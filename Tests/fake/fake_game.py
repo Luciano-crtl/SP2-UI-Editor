@@ -44,6 +44,10 @@ def answer(path, b, by):
     if path == 'panels': return S.setdefault('panels', [])
     if path == 'panel_new': S.setdefault('panels', []).append(dict(uid='p%d' % len(S['panels']), title=b['title'], open=True)); S['sel'] = 2; S['serial'] += 1; return dict(ok=True, uid='p0', h=2)
     if path == 'configs': return [dict(plugin='a.b', mod='Armor Fragments', section='Debug', key='DrawRays', kind='bool', value='true', text='Draws <b>rays</b>'), dict(plugin='a.b', mod='Armor Fragments', section='Energy', key='Resistance', kind='number', value='600', text='J')]
+    if path == 'methods': return [dict(root='flight', of='FlightUIScript', method='Turn(float a)', args=['a'])]
+    if path == 'styles': return dict(styles=[dict([('class', 'btn'), ('attributes', [dict(name='color', value=S.get('st', '#6c6c6c'), color=True), dict(name='height', value='48')])])], constants=[dict(name='ColorPrimary', value='#28599e', color=True)])
+    if path == 'style': S['st'] = b['value']; return change(by, 'style', lambda: None, lambda: None)
+    if path == 'export': return dict(ok=True, folder='C:/x', files=['a.cs'], left=['toggle (config)'])
     if path == 'mod_actions': return []
     if path == 'action':
         n = N[b['h']]; old = n.get('action'); new = dict(kind=b['kind'], args=b.get('args') or {})

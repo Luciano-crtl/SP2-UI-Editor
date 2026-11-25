@@ -42,6 +42,12 @@ namespace SP2UIEditor
                     if (string.IsNullOrWhiteSpace(Name) || !SafeXml.ValueAllowed(Name)) return "a title is needed";
                     return Value == null || Values.Problem("int", Value) == null ? null : "its width must be a whole number";
                 case "action": return ActionProblem(Name, Args);
+                case "style":
+                    if (!Target.StartsWith("style:") || Target.Length < 7) return "no style";
+                    return SafeXml.AttributeAllowed(Name) && SafeXml.ValueAllowed(Value) && Value != null ? null : "that value is not allowed";
+                case "constant":
+                    if (!Target.StartsWith("const:") || Target.Length < 7 || !Target.Substring(6).All(char.IsLetterOrDigit) || Name != "Value") return "no constant";
+                    return Value != null && SafeXml.ValueAllowed(Value) ? null : "that value is not allowed";
                 case "add":
                     if (!GoodUid(Uid)) return "no uid";
                     try { return SafeXml.Problem(XElement.Parse(Xml ?? "")); }
@@ -78,6 +84,11 @@ namespace SP2UIEditor
                     if (string.IsNullOrEmpty(n2) || n2.Length > 40 || !(char.IsLetter(n2[0]) || n2[0] == '_') || !n2.All(c => c < 128 && (char.IsLetterOrDigit(c) || c == '_')))
                         return "a variable's name has only letters, digits and _";
                     return Limits(a);
+                case "method":
+                    string sig = a("method") ?? "";
+                    int paren = sig.IndexOf('(');
+                    if (!Calls.Roots.Contains(a("root")) || paren < 1 || !Calls.NameAllowed(sig.Substring(0, paren))) return "that method may not be called";
+                    return args.Keys.All(k => new[] { "root", "method", "a0", "a1", "a2" }.Contains(k)) ? null : "unknown argument";
                 case "mod": return string.IsNullOrEmpty(a("name")) ? "choose an action" : null;
             }
             return "unknown action '" + kind + "'";
@@ -207,7 +218,7 @@ namespace SP2UIEditor
                     list.RemoveAll(o => gone.Any(g => Within(o.Target, g) || Within(o.Parent, g) || OpensPanel(o, g) || (o.Do == "add" && "add:" + o.Uid == g)));
                     continue;
                 }
-                if (op.Do == "set" || op.Do == "class") list.RemoveAll(o => o.Do == op.Do && o.Target == op.Target && o.Name == op.Name);
+                if (op.Do == "set" || op.Do == "class" || op.Do == "style" || op.Do == "constant") list.RemoveAll(o => o.Do == op.Do && o.Target == op.Target && o.Name == op.Name);
                 if (op.Do == "action") list.RemoveAll(o => o.Do == "action" && o.Target == op.Target);
                 if (op.Do == "action" && op.Name == "none") continue;
                 if (op.Do == "panel") list.RemoveAll(o => o.Do == "panel" && o.Uid == op.Uid);
@@ -238,7 +249,7 @@ namespace SP2UIEditor
             foreach (Package p in inOrder)
                 foreach (Op op in p.Ops)
                 {
-                    if (op.Do != "set" && op.Do != "move") continue;
+                    if (op.Do != "set" && op.Do != "move" && op.Do != "style" && op.Do != "constant") continue;
                     string key = op.Do + " " + op.Target + " " + op.Name;
                     KeyValuePair<Package, Op> other;
                     if (seen.TryGetValue(key, out other) && other.Key != p && (other.Value.Value != op.Value || other.Value.Parent != op.Parent || other.Value.Index != op.Index))

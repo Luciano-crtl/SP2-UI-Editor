@@ -118,7 +118,7 @@ namespace SP2UIEditor
         private static XElement E(string name, params object[] content) { return new XElement(name, content); }
         private static XAttribute A(string name, string value) { return new XAttribute(name, value); }
 
-        private static XElement Layout(Op def)
+        public static XElement Layout(Op def)
         {
             return E("Xml",
                 E("Stylesheets",

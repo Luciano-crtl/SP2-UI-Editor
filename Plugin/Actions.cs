@@ -33,7 +33,7 @@ namespace SP2UIEditor
     {
         public sealed class Binding
         {
-            public string Kind;
+            public string Kind, Owner;
             public Dictionary<string, string> Args;
             public Widget Widget;
             public bool Alive = true;
@@ -45,6 +45,7 @@ namespace SP2UIEditor
             public string Problem;
         }
 
+        public static string Owner;      // the package being applied (null = the one being edited)
         private static readonly Dictionary<int, Binding> bindings = new Dictionary<int, Binding>();   // by handle
 
         public static Binding Of(Widget w)
@@ -57,7 +58,8 @@ namespace SP2UIEditor
         public static Binding Bind(Widget w, string kind, Dictionary<string, string> args, out string problem)
         {
             problem = null;
-            Binding b = new Binding { Kind = kind, Args = args ?? new Dictionary<string, string>(), Widget = w };
+            Binding b = new Binding { Kind = kind, Args = args ?? new Dictionary<string, string>(), Widget = w, Owner = Owner ?? (Packages.Current != null ? Packages.Current.Name : "(not saved)") };
+            if (kind == "method" && (problem = Methods.Problem(w, b.Args)) != null) return null;
             bool toggle = w.FindWidget<ToggleWidget>("toggle-value") != null, slider = w.FindWidget<SliderWidget>("slider") != null;
             TextWidget value = w.FindWidget<TextWidget>("value-text");
             if (kind == "config" && Entry(b) == null) { problem = "that setting was not found (is the mod loaded?)"; return null; }
@@ -131,6 +133,7 @@ namespace SP2UIEditor
                     case "link": Link(Arg(b, "url")); break;
                     case "config": Config(b, value); break;
                     case "variable": Variable(b, value); break;
+                    case "method": Methods.Run(b.Widget, b.Owner, b.Args); break;
                     case "mod":
                         Action action;
                         if (UiActions.All.TryGetValue(Arg(b, "name") ?? "", out action)) action();

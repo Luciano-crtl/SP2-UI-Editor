@@ -88,7 +88,7 @@ namespace SP2UIEditor
 
         private static void Dirty(Widget w, Widget.DirtyFlags flags) { SetDirty.Invoke(w, new object[] { flags, false }); }
 
-        private static void Refresh(Widget w)
+        public static void Refresh(Widget w)
         {
             if (w == null) return;
             Dirty(w, Widget.DirtyFlags.ApplyStyes | Widget.DirtyFlags.UpdateLayout);
@@ -390,6 +390,17 @@ namespace SP2UIEditor
             string id = sink == null ? Identity.Of(w) : null;
             Op op = id == null ? null : new Op { Do = "action", Target = id, Name = kind, Args = args, Prints = Identity.Prints(id) };
             Record(w, op, author, Name(w) + ": action " + kind + (args == null ? "" : " " + string.Join(", ", args.Where(x => x.Key != "target").Select(x => x.Value))), () => put(oldKind, oldArgs), () => put(kind, args));
+            return null;
+        }
+
+        // A style or a constant: shared by many elements. Styles.Sync does the work, from the edits in force.
+        public static string Shared(Widget w, string target, string name, string value, string author)
+        {
+            bool constant = target != null && target.StartsWith("const:");
+            Op op = new Op { Do = constant ? "constant" : "style", Target = target, Name = constant ? "Value" : name, Value = value };
+            string problem = op.Problem() ?? Styles.Problem(w, target, name, value);
+            if (problem != null) return problem;
+            Record(null, op, author, (constant ? "constant " + target.Substring(6) : "style " + target.Substring(6) + ": " + name) + " = " + value, () => null, () => null);
             return null;
         }
 

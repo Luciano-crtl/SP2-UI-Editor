@@ -28,6 +28,7 @@ namespace SP2UIEditor
             // take its own patches away.
             harmony = new Harmony("com.luciano.sp2uieditor." + Guid.NewGuid().ToString("N"));
             Panels.Apply(harmony);
+            Styles.Apply(harmony);
             Patches.Apply(harmony);
             try { Packages.Load(); }
             catch (Exception e) { Log.LogError("[UIEDIT] packages: " + e); }
@@ -70,6 +71,7 @@ namespace SP2UIEditor
             Try("panels", Panels.CloseAll);
             Try("changes", LiveEditor.UndoAll);
             Try("packages", Packages.UnapplyAll);
+            Try("styles", Styles.Restore);
             Try("actions", Actions.UnbindAll);
         }
 
