@@ -36,7 +36,7 @@ namespace SP2UIEditor.Desktop
             MinimumSize = new Size(1000, 600);
             BackColor = Color.FromArgb(0x17, 0x19, 0x1d);
             wait.ForeColor = Color.Gainsboro;
-            wait.Text = "Abra o SimplePlanes 2 com o plugin SP2 UI Editor.\nEsperando o jogo...\n\nOpen SimplePlanes 2 with the SP2 UI Editor plugin.\nWaiting for the game...";
+            wait.Text = "Abra o SimplePlanes 2 com o plugin SP2 UI Editor.\nEsperando o jogo... Se ele perguntar se pode conectar, clique em Okay.\n\nOpen SimplePlanes 2 with the SP2 UI Editor plugin.\nWaiting for the game... If it asks whether to connect, click Okay.";
             Controls.Add(view);
             Controls.Add(wait);
             Load += async (s, e) => await Start();
@@ -69,8 +69,21 @@ namespace SP2UIEditor.Desktop
             }
         }
 
+        // Tells the plugin that the editor is open: with its server off, the game then asks the player.
+        private static void Touch()
+        {
+            try
+            {
+                string folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "SP2UIEditor");
+                Directory.CreateDirectory(folder);
+                File.WriteAllText(Path.Combine(folder, "editor-open"), "");
+            }
+            catch { }
+        }
+
         private void Look()
         {
+            Touch();
             string key = null;
             int port = 0;
             try

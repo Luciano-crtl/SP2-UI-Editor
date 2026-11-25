@@ -1,6 +1,7 @@
 bin/
 obj/
 publish/
+dist/
 .vs/
 *.user
 # the game layouts and assets never enter the repository

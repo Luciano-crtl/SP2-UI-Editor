@@ -104,11 +104,17 @@ namespace SP2UIEditor
         private static void ScriptTypePostfix(string scriptTypeName, ref Type __result)
         {
             if (__result == null && scriptTypeName == typeof(PackagePanel).FullName) __result = typeof(PackagePanel);
+            if (__result == null && scriptTypeName == typeof(PackageList).FullName) __result = typeof(PackageList);
         }
 
         private static bool LoadXmlPrefix(string path, ref XElement __result)
         {
             if (path == null || !path.StartsWith(Prefix)) return true;
+            if (path == Player.Path)
+            {
+                __result = Player.Layout();
+                return false;
+            }
             Op def = Def(path.Substring(Prefix.Length));
             if (def == null) return true;
             __result = Layout(def);
@@ -118,15 +124,17 @@ namespace SP2UIEditor
         private static XElement E(string name, params object[] content) { return new XElement(name, content); }
         private static XAttribute A(string name, string value) { return new XAttribute(name, value); }
 
-        public static XElement Layout(Op def)
+        public static XElement Layout(Op def) { return Frame(def.Name, def.Value ?? "480", typeof(PackagePanel)); }
+
+        public static XElement Frame(string title, string width, Type script)
         {
             return E("Xml",
                 E("Stylesheets",
                     E("Stylesheet", A("path", "Xml/Styles")),
-                    E("Stylesheet", E("Styles", E("Style", A("class", "sp2ui-panel"), A("width", def.Value ?? "480"), A("maxHeightPercent", "90"))))),
+                    E("Stylesheet", E("Styles", E("Style", A("class", "sp2ui-panel"), A("width", width), A("maxHeightPercent", "90"))))),
                 E("Widgets",
                     E("Instance", A("id", "sp2ui-panel"), A("templateId", "dialog"), A("class", "sp2ui-panel"), A("contentPadding", "7 7 7 7"),
-                        A("anchor", "MiddleCenter"), A("script", typeof(PackagePanel).FullName), A("title", def.Name.Replace("@", "@@")),
+                        A("anchor", "MiddleCenter"), A("script", script.FullName), A("title", title.Replace("@", "@@")),
                         A("backerVisible", "false"), A("buttonRowVisible", "false"), A("spacerVisible", "false"),
                         E("Section", A("sectionId", "title-buttons"),
                             E("Button", A("id", "sp2ui-close"), A("class", "btn btn-danger"), A("width", "35"), A("height", "35"), A("anchor", "MiddleRight"),
