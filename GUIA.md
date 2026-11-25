@@ -15,7 +15,7 @@ Não é preciso ter o programa do editor, e nenhum servidor é aberto. Se um bot
 
 1. Faça o passo 1 acima e abra o jogo.
 2. Abra `editor\SP2UIEditor.exe`. O jogo pergunta se pode conectar: clique em **Okay**.
-   Para não perguntar mais, ponha `Enabled = true` em `BepInEx\config\com.luciano.sp2uieditor.cfg`.
+   Para não perguntar mais, ponha `Enabled = true` em `BepInEx\config\com.sp2uieditor.cfg`.
 3. **Escolher no jogo**, clique num elemento e mude as propriedades à direita. **Ctrl+Z** na janela desfaz.
 4. **Pacotes** > dê um nome > **Novo pacote**, e depois **Salvar**.
 

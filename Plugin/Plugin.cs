@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace SP2UIEditor
 {
-    [BepInPlugin("com.luciano.sp2uieditor", "SP2 UI Editor", Version)]
+    [BepInPlugin("com.sp2uieditor", "SP2 UI Editor", Version)]
     public sealed class EditorPlugin : BaseUnityPlugin
     {
         public const string Version = "0.6.0";
@@ -26,7 +26,7 @@ namespace SP2UIEditor
 
             // Its own id for each loaded copy: on a reload (F6) the new copy is made before the old one is removed, and the old one must only
             // take its own patches away.
-            harmony = new Harmony("com.luciano.sp2uieditor." + Guid.NewGuid().ToString("N"));
+            harmony = new Harmony("com.sp2uieditor." + Guid.NewGuid().ToString("N"));
             Panels.Apply(harmony);
             Styles.Apply(harmony);
             Patches.Apply(harmony);

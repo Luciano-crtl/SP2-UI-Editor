@@ -15,7 +15,7 @@ The editor's program is not needed and no server is opened. If a button of a pac
 
 1. Do step 1 above and start the game.
 2. Open `editor\SP2UIEditor.exe`. The game asks whether it may connect: click **Okay**.
-   To never be asked, set `Enabled = true` in `BepInEx\config\com.luciano.sp2uieditor.cfg`.
+   To never be asked, set `Enabled = true` in `BepInEx\config\com.sp2uieditor.cfg`.
 3. Choose English at the top right. **Pick in the game**, click an element and change its properties on the right. **Ctrl+Z** in the window undoes.
 4. **Packages** > type a name > **New package**, then **Save**.
 
