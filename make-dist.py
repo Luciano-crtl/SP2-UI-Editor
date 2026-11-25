@@ -26,7 +26,7 @@ single = ['-c', 'Release', '-r', 'win-x64', '--self-contained', 'true', '-p:Publ
 for project, folder, exe in (('Desktop', 'editor', 'SP2UIEditor.exe'), ('Mcp', 'mcp', 'SP2UI.Mcp.exe')):
     run('dotnet', 'publish', project, *single, '-o', os.path.join(D, folder), *clean)
     shutil.copy(os.path.join(D, folder, exe), os.path.join(B, folder))
-for g in ('GUIA.md', 'GUIDE.md'):
+for g in ('GUIA.md', 'GUIDE.md', 'LICENSE'):
     shutil.copy(g, B)
 
 user = getpass.getuser().lower().encode()
