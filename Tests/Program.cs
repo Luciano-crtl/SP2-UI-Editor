@@ -114,6 +114,22 @@ internal static class Program
         Check(Package.Compact(pops).Select(o => o.Target).SequenceEqual(new[] { "panel:p2", "src:F#2" }), "a removed panel takes its contents and the buttons' actions along");
         Check(Package.Compact(new[] { new Op { Do = "action", Target = "a", Name = "link" }, new Op { Do = "action", Target = "a", Name = "none" } }).Count == 0, "no action");
 
+        // the descriptions
+        if (System.IO.File.Exists("Plugin/help.txt"))
+        {
+            HashSet<string> keys = new HashSet<string>();
+            foreach (string l in System.IO.File.ReadAllLines("Plugin/help.txt").Where(l => l.Trim().Length > 0 && l[0] != '#'))
+            {
+                string[] f = l.Split('|');
+                Check(f.Length == 5 && f[1].Length > 0 && f[3].Length > 0 && (f[0].StartsWith("opt.") || f[2].Length > 0 && f[4].Length > 0), "help line: " + l);
+                Check(keys.Add(f[0]), "help twice: " + f[0]);
+            }
+            string[] asked = System.Text.RegularExpressions.Regex.Matches(System.IO.File.ReadAllText("Plugin/page.html"), "info\\('(feat|kind|act)','(\\w+)'").Select(m => m.Groups[1].Value + "." + m.Groups[2].Value).Distinct().ToArray();
+            foreach (string k in asked) Check(keys.Contains(k), "no description of " + k);
+            foreach (string k in SafeXml.Elements) Check(k == "Section" || keys.Contains("type." + k), "no description of the element " + k);
+            Check(keys.Count > 450 && asked.Length > 20, "descriptions: " + keys.Count + ", asked: " + asked.Length);
+        }
+
         // shared styles
         Op St(string t, string n, string v) { return new Op { Do = t.StartsWith("const:") ? "constant" : "style", Target = t, Name = n, Value = v, Text = n }; }
         Check(St("style:btn", "color", "#fff000").Problem() == null && St("style:a b", "color", "@X").Problem() == null && St("const:ColorPrimary", "Value", "#fff000").Problem() == null, "styles");
@@ -123,7 +139,7 @@ internal static class Program
         // methods
         Check(Calls.Words("SaveCraftXMLFile2Now").SequenceEqual(new[] { "save", "craft", "xml", "file", "now" }), string.Join(",", Calls.Words("SaveCraftXMLFile2Now")));
         foreach (string good in new[] { "ToggleWindSettings", "ShowMessageless", "SetPaused", "RecenterView", "Typewriter" }) Check(Calls.NameAllowed(good), good);
-        foreach (string bad in new[] { "SaveCraft", "QuitGame", "DeleteFile", "OpenURL", "LoadFromPath", "KickPlayer", "SendChat", "RunCommand", "a b", "x;y", "", "RpcDamage" }) Check(!Calls.NameAllowed(bad), bad + " was allowed");
+        foreach (string bad in new[] { "SaveCraft", "QuitGame", "DeleteFile", "OpenURL", "LoadFromPath", "KickPlayer", "SendChat", "RunCommand", "Awake", "Update", "OnStartup", "OnClicked", "CreateNewAircraft", "InstallResources", "Quicksave", "HandleInput", "a b", "x;y", "", "RpcDamage" }) Check(!Calls.NameAllowed(bad), bad + " was allowed");
         List<string> sigs = Calls.Of(typeof(Assets.Scripts.Fake)).Select(Calls.Signature).ToList();
         Check(sigs.SequenceEqual(new[] { "Jump(float height, bool twice)", "Turn()" }), "methods: " + string.Join(" | ", sigs));
         Check(Calls.Of(typeof(string)).Count == 0 && Calls.Of(typeof(Elsewhere.Fake2)).Count == 0, "methods of other code");

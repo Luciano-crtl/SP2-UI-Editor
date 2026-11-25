@@ -11,6 +11,7 @@
   <ItemGroup>
     <Compile Include="..\Core\*.cs" LinkBase="Core" />
     <EmbeddedResource Include="page.html" LogicalName="page.html" />
+    <EmbeddedResource Include="help.txt" LogicalName="help.txt" />
     <Reference Include="$(GameDir)\BepInEx\core\BepInEx.dll" Private="False" />
     <Reference Include="$(GameDir)\BepInEx\core\0Harmony.dll" Private="False" />
     <Reference Include="$(M)\Game.dll" Private="False" />

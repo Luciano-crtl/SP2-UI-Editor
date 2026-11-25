@@ -20,7 +20,7 @@ namespace SP2UIEditor
             "token", "web", "http", "url", "link", "publish", "share", "post", "purchase", "buy", "process", "exec", "execute", "run", "script",
             "quit", "exit", "shutdown", "restart", "kick", "ban", "vote", "report", "chat", "message", "send", "rpc", "server", "client", "host", "connect",
             "disconnect", "network", "register", "unregister", "invoke", "reflection", "assembly", "type", "import", "export", "xml", "resource",
-            "destroy", "reset", "clear", "clean", "wipe", "command", "mod", "mods", "steam", "dispose",
+            "destroy", "new", "install", "initialize", "quicksave", "startup", "raise", "handle", "reset", "clear", "clean", "wipe", "command", "mod", "mods", "steam", "dispose",
         };
 
         // "SaveCraftXml" -> save, craft, xml
@@ -39,8 +39,12 @@ namespace SP2UIEditor
             return words;
         }
 
+        // Called by Unity or by the game itself at its own moments.
+        private static readonly string[] Own = { "Awake", "Start", "Update", "LateUpdate", "FixedUpdate", "OnGUI" };
+
         public static bool NameAllowed(string name)
         {
+            if (Own.Contains(name) || (name != null && Words(name).FirstOrDefault() == "on")) return false;
             return !string.IsNullOrEmpty(name) && name.Length <= 80 && name.All(c => char.IsLetterOrDigit(c) && c < 128) && !Words(name).Any(Never.Contains);
         }
 

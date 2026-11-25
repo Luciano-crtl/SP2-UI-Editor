@@ -38,6 +38,12 @@ code{font:12px Consolas,monospace;word-break:break-all;color:#c9d2de}
 dialog{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:10px;width:560px;max-width:92vw;max-height:80vh}
 dialog::backdrop{background:#000a}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.cards button{text-align:left;min-height:52px}
 #off{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;text-align:center;padding:30px}
+.i{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;min-height:0;padding:0;margin-left:5px;border-radius:50%;border:1px solid #5d87b8;background:transparent;color:#8db8f5;font:bold 11px/1 "Segoe UI",sans-serif;vertical-align:middle;flex:none;cursor:help}
+.i:hover{background:#24405f}.fl{display:flex;align-items:center;min-width:0}.fl span{overflow:hidden;text-overflow:ellipsis}
+#tip{margin:0;inset:auto;max-width:340px;background:#10151c;color:var(--text);border:1px solid #5d87b8;border-radius:8px;padding:9px 12px;font-size:13px;box-shadow:0 6px 20px #000a}
+#tip b{display:block;margin-bottom:3px}#tip .h{color:var(--dim);margin-top:5px}#tip code{display:block;margin-top:5px;color:var(--dim)}
+.info{border-left:3px solid #5d87b8;padding:4px 8px;margin:6px 0;background:#1b2530;font-size:13px}
+.step{align-items:start;display:grid;grid-template-columns:26px 1fr;gap:8px;margin:8px 0}.step>b{background:var(--blue);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center}
 </style>
 </head>
 <body>
@@ -45,7 +51,7 @@ dialog::backdrop{background:#000a}.cards{display:grid;grid-template-columns:repe
   <b>SP2 UI Editor</b><span id="status" class="dim small"></span><span class="grow"></span>
   <button id="pick"></button><button id="undo"></button><button id="redo"></button><button id="list"></button><button id="panelsB"></button><button id="packs"></button><button id="save" class="main"></button>
   <label class="small"><input type="checkbox" id="claude"> <span id="claudeT"></span></label>
-  <select id="lang" aria-label="Language"><option value="pt">Português</option><option value="en">English</option></select>
+  <button id="help" class="main"></button><select id="lang" aria-label="Language"><option value="pt">Português</option><option value="en">English</option></select>
 </header>
 <main>
   <section>
@@ -60,10 +66,13 @@ dialog::backdrop{background:#000a}.cards{display:grid;grid-template-columns:repe
   <section><div class="scroll" id="props"></div></section>
 </main>
 <div id="msg" role="status"></div>
+<div id="tip" popover="manual" role="tooltip"></div>
 <dialog id="dlg"></dialog>
 <div id="off"><div><h2 id="offT"></h2><p class="dim" id="offP"></p></div></div>
 <script>
 'use strict';
+const HELP_TEXT=`/*HELP*/`;
+const HELP={};for(const l of HELP_TEXT.split('\n')){const p=l.trim().split('|');if(p.length===5&&l[0]!=='#')HELP[p[0]]={pt:[p[1],p[2]],en:[p[3],p[4]]}}
 const T={pt:{pick:'Escolher no jogo',picking:'Clique no jogo (Esc cancela)',undo:'Desfazer',redo:'Refazer',list:'Mudanças',claude:'Claude pode editar',search:'Buscar texto ou id...',vis:'só visível',live:'imagem ao vivo',shot:'Clique na imagem para escolher um elemento',
 none:'Escolha um elemento: no jogo, na imagem ou na árvore.',basic:'Básico',adv:'Avançado',where:'De onde vem',add:'Adicionar',inside:'Dentro',after:'Depois',up:'Subir',down:'Descer',hide:'Esconder',del:'Remover',show:'Mostrar',classes:'Classes de estilo',
 parts:'Textos e partes',game:'O jogo escreve este texto enquanto roda e pode trocá-lo de novo.',tmpl:'Feito do modelo',built:'Esta tela foi montada antes do editor carregar ou por código de um mod. Reabra a tela para ver o arquivo.',inTmpl:'Vem de dentro de um modelo: outras telas usam o mesmo original. Sua mudança vale só aqui.',
@@ -91,7 +100,91 @@ async function api(path,body,raw){
 let msgTimer;function say(text,bad){const m=$('msg');m.textContent=text;m.className=bad?'bad':'';m.style.display='block';clearTimeout(msgTimer);msgTimer=setTimeout(()=>m.style.display='none',bad?6000:2500)}
 async function act(path,body){try{const r=await api(path,body);await tick();return r}catch(e){say(e.message,true)}}
 function el(tag,props,...kids){const e=document.createElement(tag);for(const k in props||{}){if(k==='cls')e.className=props[k];else if(k.startsWith('on'))e[k]=props[k];else if(k==='dis')e.disabled=props[k];else e.setAttribute(k,props[k])}for(const c of kids)if(c!=null)e.append(c);return e}
-function words(){t=T[lang];document.documentElement.lang=lang==='pt'?'pt-BR':'en';$('undo').textContent=t.undo;$('redo').textContent=t.redo;$('list').textContent=t.list;$('panelsB').textContent=t.panels;$('packs').textContent=t.packs;$('save').textContent=t.save;$('claudeT').textContent=t.claude;$('search').placeholder=t.search;$('visT').textContent=t.vis;$('liveT').textContent=t.live;$('shotT').textContent=t.shot;$('offT').textContent=t.off;$('offP').textContent=t.offp;$('lang').value=lang;drawProps()}
+function words(){t=T[lang];document.documentElement.lang=lang==='pt'?'pt-BR':'en';$('undo').textContent=t.undo;$('redo').textContent=t.redo;$('list').textContent=t.list;$('panelsB').textContent=t.panels;$('packs').textContent=t.packs;$('save').textContent=t.save;$('claudeT').textContent=t.claude;$('search').placeholder=t.search;$('visT').textContent=t.vis;$('liveT').textContent=t.live;$('shotT').textContent=t.shot;$('offT').textContent=t.off;$('offP').textContent=t.offp;$('lang').value=lang;$('help').textContent=lang==='pt'?'Ajuda':'Help';features();drawProps()}
+
+// ---- help ----
+const has=k=>HELP[k]&&HELP[k][lang];
+const nm=(k,other)=>has(k)?HELP[k][lang][0]:other;
+// [name, description] of anything that can be changed; there is always one
+function about(kind,id){
+  const k=kind+'.'+id;if(has(k))return HELP[k][lang];
+  const pt=lang==='pt';let m;
+  if(kind==='attr'){
+    if(m=/^(.*?)(Alpha|Multiply)$/.exec(id)){const b=about('attr',m[1]);return m[2]==='Alpha'?[b[0]+(pt?': transparência':': transparency'),pt?'De 0 (invisível) a 1 (normal), só para esta cor.':'From 0 (invisible) to 1 (normal), only for this color.']:[b[0]+(pt?': brilho':': brightness'),pt?'Multiplica a cor: 1 = normal, 0.5 = mais escura, 2 = mais clara.':'Multiplies the color: 1 = normal, 0.5 = darker, 2 = lighter.']}
+    return[id,pt?'Propriedade deste elemento. Experimente e use Desfazer se não gostar.':'A property of this element. Try it, and Undo if you do not like it.'];
+  }
+  if(kind==='type')return[id,pt?'Um elemento feito pelo jogo ou por um mod.':'An element made by the game or a mod.'];
+  if(kind==='tmpl')return[id,pt?'Peça própria desta tela, feita pelo jogo ou por um mod. Pode precisar do código dela para funcionar.':'A piece of this screen, made by the game or a mod. It may need that code to work.'];
+  if(kind==='class'){
+    if(m=/^(.*?)-?(hover|press|select|selected|on)$/.exec(id))return[about('class',m[1])[0]+' ('+({hover:pt?'mouse em cima':'under the mouse',press:pt?'apertado':'pressed',select:pt?'escolhido':'selected',selected:pt?'escolhido':'selected',on:pt?'ligado':'on'})[m[2]]+')',pt?'O jogo usa esta aparência nesse momento.':'The game uses this look at that moment.'];
+    if(has('type.'+id))return[about('type',id)[0],pt?'Regras de todos os elementos deste tipo.':'Rules of every element of this kind.'];
+    return[id,pt?'Aparência criada pelo jogo ou por um mod para elementos desta tela.':'A look made by the game or a mod for elements of this screen.'];
+  }
+  if(kind==='const'){
+    const g=[[/^Color/,'Cor','Color'],[/^Sound/,'Som','Sound'],[/^Sprite/,'Figura','Picture'],[/^Scale/,'Animação de tamanho','Size animation'],[/^Font/,'Fonte','Font']].find(x=>x[0].test(id));
+    const rest=id.replace(/^(Color|Sound|Sprite|Scale|Font)/,'').replace(/([a-z])([A-Z])/g,'$1 $2');
+    return[g?(pt?g[1]:g[2])+': '+rest:id,pt?'Valor usado em vários lugares da interface.':'A value used in several places of the interface.'];
+  }
+  if(kind==='meth'){
+    const w=id.replace(/([a-z])([A-Z])/g,'$1 $2').split(' '),v='verb.'+w[0].toLowerCase(),r=w.slice(1).join(' ').toLowerCase();
+    return[id,(has(v)?HELP[v][lang][0]+': '+r+'.':(pt?'Comando interno: ':'Internal command: ')+w.join(' ').toLowerCase()+'.')+(pt?' (descrição automática, feita do nome)':' (automatic description, made from the name)')];
+  }
+  if(kind==='setting')return[id,pt?'Este mod não explicou esta opção.':'This mod did not explain this option.'];
+  return[id,''];
+}
+let tipFor=null;
+function showTip(b,name,text,how,code){
+  const p=$('tip');p.replaceChildren(el('b',{},name),text,how?el('div',{cls:'h'},how):'',code?el('code',{},code):'');
+  try{if(!p.matches(':popover-open'))p.showPopover()}catch(e){}
+  const r=b.getBoundingClientRect(),w=p.offsetWidth,h=p.offsetHeight;
+  p.style.left=Math.max(8,Math.min(innerWidth-w-8,r.left+r.width/2-w/2))+'px';p.style.top=(r.bottom+6+h>innerHeight-8?Math.max(8,r.top-h-6):r.bottom+6)+'px';tipFor=b;
+}
+function hideTip(){tipFor=null;try{$('tip').hidePopover()}catch(e){}}
+// the (!): shows what something is, with the mouse, the keyboard or a click
+function info(kind,id,how,code,text){
+  const[n,d]=about(kind,id),b=el('button',{cls:'i',type:'button','aria-label':n+': '+(text||d)},'!');let pinned=false;
+  const on=()=>showTip(b,n,text||d,how,code);
+  b.onmouseenter=on;b.onfocus=on;b.onmouseleave=()=>{if(!pinned)hideTip()};b.onblur=()=>{pinned=false;hideTip()};
+  b.onclick=e=>{e.preventDefault();e.stopPropagation();pinned=!pinned;pinned?on():hideTip()};
+  return b;
+}
+const howTo=k=>has('how.'+k)?HELP['how.'+k][lang].join(': '):null;
+const optName=v=>{if(!v)return'—';const p=v.split(/[ ,]+/).map(x=>has('opt.'+x)?HELP['opt.'+x][lang][0]:null);return p.every(x=>x)?p.join(', ')+' ('+v+')':v};
+addEventListener('scroll',()=>{if(tipFor)hideTip()},true);
+// the (!) beside what is always on the window
+function features(){
+  for(const x of document.querySelectorAll('.i.fixed'))x.remove();
+  for(const[id,k]of[['pick','pick'],['undo','undo'],['redo','redo'],['list','list'],['panelsB','panels'],['packs','packs'],['save','save'],['claudeT','claude'],['lang','lang'],['search','search'],['visT','vis'],['reload','reload'],['places','places'],['shotT','shot'],['liveT','live']]){
+    const b=info('feat',k);b.classList.add('fixed');$(id).after(b);}
+  const b=info('feat','tree');b.classList.add('fixed');$('reload').nextElementSibling.after(b);
+}
+function helpDialog(){
+  const pt=lang==='pt',dlg=$('dlg'),step=(n,a,b)=>el('div',{cls:'step'},el('b',{},''+n),el('div',{},el('b',{},a),el('div',{cls:'dim'},b)));
+  const task=(q,...s)=>el('details',{},el('summary',{},q),el('ol',{},...s.map(x=>el('li',{},x))));
+  dlg.replaceChildren(el('h2',{},pt?'Primeiros passos':'First steps'),el('p',{},pt?'Você não precisa saber programar. Nada aqui estraga o jogo: tudo pode ser desfeito, e nada é gravado até você salvar.':'You do not need to know programming. Nothing here breaks the game: everything can be undone, and nothing is kept until you save.'),
+    ...(pt?[step(1,'Escolha','Clique em "Escolher no jogo", vá ao jogo e clique no que quer mudar.'),step(2,'Mude','À direita, troque um valor e aperte Enter. O jogo muda na hora.'),step(3,'Não gostou?','Clique em "Desfazer" ou Ctrl+Z.'),step(4,'Gostou?','Em "Pacotes", crie um pacote (só na primeira vez) e clique em "Salvar".')]
+      :[step(1,'Pick','Click "Pick in the game", go to the game and click what you want to change.'),step(2,'Change','On the right, change a value and press Enter. The game changes at once.'),step(3,'Not good?','Click "Undo" or Ctrl+Z.'),step(4,'Good?','Under "Packages", make a package (only the first time) and click "Save".')]),
+    el('p',{},pt?'Passe o mouse ou clique em qualquer ':'Rest the mouse on, or click, any ',el('span',{cls:'i'},'!'),pt?' para saber o que é aquilo.':' to learn what something is.'),
+    el('h3',{},pt?'Como eu faço para...':'How do I...'),
+    ...(pt?[task('trocar o que está escrito num botão','Escolha o botão no jogo.','Se à direita o nome for "Texto", pule para o passo 4.','Em "Textos e partes", clique no texto.','Mude "Texto" e aperte Enter.'),
+      task('mudar a cor de um botão','Escolha o botão. Se veio o texto dele, clique no botão em "Caminho", no alto à direita.','Em "Cor", clique no quadradinho e escolha.'),
+      task('mudar a cor de todos os botões azuis','Escolha um botão azul.','Clique em "Estilos gerais".','Em btn-primary, mude a cor.'),
+      task('esconder uma coisa','Escolha-a e clique em "Esconder". Para voltar, use "Desfazer".'),
+      task('criar uma janela minha','Clique em "Painéis", escreva um nome e clique em "Novo painel".','Clique em "Adicionar: Dentro" e escolha o que pôr.','Repita para cada item.'),
+      task('criar um botão que abre a minha janela','No voo, em "Ir para um lugar", escolha "Menu de voo".','"Adicionar: Dentro", "Botão".','Em "O que faz", escolha "Abrir ou fechar painel", escolha a janela e clique em "Aplicar".'),
+      task('controlar uma opção de um mod','Adicione um liga/desliga ou controle deslizante na sua janela.','Em "O que faz", escolha "Configuração de mod", a opção, e clique em "Aplicar".'),
+      task('mandar para um amigo','Salve. Em "Pacotes" veja a pasta no fim da janela e envie o arquivo com o nome do pacote.')]
+    :[task('change what a button says','Pick the button in the game.','If the name on the right is "Text", skip to step 4.','Under "Texts and parts", click the text.','Change "Text" and press Enter.'),
+      task('change the color of a button','Pick the button. If its text came instead, click the button in the "Path", at the top right.','At "Color", click the little square and choose.'),
+      task('change the color of all blue buttons','Pick a blue button.','Click "Shared styles".','Under btn-primary, change the color.'),
+      task('hide something','Pick it and click "Hide". To bring it back, use "Undo".'),
+      task('make a window of my own','Click "Panels", type a name and click "New panel".','Click "Add: Inside" and choose what to put.','Repeat for each item.'),
+      task('make a button that opens my window','In flight, under "Go to a place", choose "Flight menu".','"Add: Inside", "Button".','Under "What it does", choose "Open or close a panel", choose the window and click "Apply".'),
+      task('control an option of a mod','Add a toggle or slider to your window.','Under "What it does", choose "Mod setting", the option, and click "Apply".'),
+      task('send it to a friend','Save. Under "Packages" see the folder at the end of the window and send the file named as the package.')]),
+    el('p',{},el('button',{onclick:()=>dlg.close()},t.close)));
+  if(!dlg.open)dlg.showModal();
+}
 
 // ---- tree ----
 const title=n=>n.text?'“'+n.text+'”':(n.id||n.template||n.type);
@@ -116,7 +209,7 @@ function line(n,depth,flat){
   const d=el('div',{cls:'row'+(n.h===sel?' sel':'')+(n.hidden?' off':''),draggable:'true',title:n.path||n.file||''});
   d.style.paddingLeft=(4+depth*14)+'px';d.dataset.h=n.h;
   d.append(el('span',{cls:'tw',onclick:e=>{e.stopPropagation();open.has(n.h)?open.delete(n.h):open.add(n.h);drawTree()}},n.n&&!flat?(open.has(n.h)?'▾':'▸'):''),
-    el('span',{},title(n)),el('span',{cls:'ty'},n.type+(n.file?' · '+n.file:'')),n.added?el('span',{cls:'tag'},'+'):'');
+    el('span',{},title(n)),el('span',{cls:'ty',title:about('type',n.type)[1]},nm('type.'+n.type,n.type)+(n.file?' · '+n.file:'')),n.added?el('span',{cls:'tag'},'+'):'');
   d.onclick=()=>pickHandle(n.h);
   d.ondragstart=e=>e.dataTransfer.setData('text',n.h);
   d.ondragover=e=>{e.preventDefault();d.classList.add('drop')};d.ondragleave=()=>d.classList.remove('drop');
@@ -139,41 +232,41 @@ const hex=v=>/^#[0-9a-f]{6}/i.test(v||'')?v.slice(0,7):'#888888';
 function field(a){
   const set=v=>{if(v!==(a.value||''))act('set',{h:sel,name:a.name,value:v})};
   let input;
-  if(a.kind==='bool')input=el('select',{onchange:e=>set(e.target.value)},...['','true','false'].map(v=>{const o=el('option',{value:v},v||'—');if((a.value||'').toLowerCase()===v)o.selected=true;if(!v)o.disabled=true;return o}));
-  else if(a.kind==='enum')input=el('select',{onchange:e=>set(e.target.value)},...[a.value&&!a.options.includes(a.value)?a.value:'',...a.options].map(v=>{const o=el('option',{value:v},v||'—');if((a.value||'')===v)o.selected=true;if(!v)o.disabled=true;return o}));
+  if(a.kind==='bool')input=el('select',{onchange:e=>set(e.target.value)},...['','true','false'].map(v=>{const o=el('option',{value:v},v||'—');o.textContent=!v?'—':v==='true'?(lang==='pt'?'sim':'yes'):(lang==='pt'?'não':'no');if((a.value||'').toLowerCase()===v)o.selected=true;if(!v)o.disabled=true;return o}));
+  else if(a.kind==='enum')input=el('select',{onchange:e=>set(e.target.value)},...[a.value&&!a.options.includes(a.value)?a.value:'',...a.options].map(v=>{const o=el('option',{value:v},optName(v));if((a.value||'')===v)o.selected=true;if(!v)o.disabled=true;return o}));
   else{
     const long=a.name==='text'||a.name==='richText'||a.name==='tooltip';
     input=el(long?'textarea':'input',{onchange:e=>set(e.target.value)});if(long)input.rows=2;
     if(a.name==='text'&&details.type==='Text'&&a.value===undefined)input.value=details.fullText||'';else input.value=a.value||'';
     if(a.kind==='color'){const c=el('input',{type:'color',value:hex(a.value),onchange:e=>set(e.target.value+((a.value||'').length===9?a.value.slice(7):'')),'aria-label':a.name});input=el('div',{cls:'pair'},c,input)}
-    else if(a.kind==='vector2')input.placeholder='x y';else if(a.kind==='rectoffset')input.placeholder='top right bottom left';
+    else if(a.kind==='vector2')input.placeholder=lang==='pt'?'horizontal vertical':'across up';else if(a.kind==='rectoffset')input.placeholder=lang==='pt'?'cima direita baixo esquerda':'top right bottom left';
   }
   const inner=input.matches('div')?input.lastChild:input;inner.setAttribute('aria-label',a.name);
   if(a.locked||a.dynamic)(input.matches('div')?[...input.children]:[input]).forEach(x=>x.disabled=true);
-  return el('div',{cls:'field'+(a.edited?' edited':'')},el('label',{title:a.name},t.a[a.name]||a.name),input);
+  return el('div',{cls:'field'+(a.edited?' edited':'')},el('label',{cls:'fl'},el('span',{},about('attr',a.name)[0]),info('attr',a.name,howTo(a.kind),a.name)),input);
 }
 function drawProps(){
   const box=$('props');if(!details){box.replaceChildren(el('p',{cls:'dim'},t.none));return}
   const d=details,parent=d.ancestors[d.ancestors.length-1],f=document.createDocumentFragment();
-  const cr=el('div',{cls:'crumbs'});d.ancestors.forEach(a=>cr.append(el('a',{onclick:()=>pickHandle(a.h)},a.name),' › '));cr.append(d.id||d.type);f.append(cr);
-  f.append(el('h2',{style:'margin:6px 0'},title(d)),el('div',{cls:'dim small'},d.type+(d.template?' · '+t.tmpl+' '+d.template:'')));
+  const cr=el('div',{cls:'crumbs'});d.ancestors.forEach(a=>cr.append(el('a',{onclick:()=>pickHandle(a.h)},a.name),' › '));cr.append(d.id||nm('type.'+d.type,d.type),info('feat','crumbs'));f.append(cr);
+  f.append(el('h2',{style:'margin:6px 0'},title(d)),el('div',{cls:'dim small'},about('type',d.type)[0],info('type',d.type,null,d.type),d.template?' · '+about('tmpl',d.template)[0]:'',d.template?info('tmpl',d.template,null,d.template):''));
   f.append(el('div',{cls:'bar',style:'padding:8px 0'},
-    el('button',{cls:'main',onclick:()=>addDialog(d.h,-1)},t.add+': '+t.inside),el('button',{dis:!parent,onclick:()=>addDialog(parent.h,d.index+1)},t.add+': '+t.after),
-    el('button',{dis:!parent||d.index===0,onclick:()=>act('move',{h:d.h,index:d.index-1})},t.up),el('button',{dis:!parent||d.index>=d.siblings-1,onclick:()=>act('move',{h:d.h,index:d.index+1})},t.down),
-    el('button',{cls:'danger',dis:!parent,onclick:()=>act(d.hidden&&!d.added?'set':'delete',d.hidden&&!d.added?{h:d.h,name:'visible',value:'true'}:{h:d.h})},d.added?t.del:d.hidden?t.show:t.hide)));
+    el('button',{cls:'main',onclick:()=>addDialog(d.h,-1)},t.add+': '+t.inside),info('feat','addInside'),el('button',{dis:!parent,onclick:()=>addDialog(parent.h,d.index+1)},t.add+': '+t.after),info('feat','addAfter'),
+    el('button',{dis:!parent||d.index===0,onclick:()=>act('move',{h:d.h,index:d.index-1})},t.up),el('button',{dis:!parent||d.index>=d.siblings-1,onclick:()=>act('move',{h:d.h,index:d.index+1})},t.down),info('feat','move'),
+    el('button',{cls:'danger',dis:!parent,onclick:()=>act(d.hidden&&!d.added?'set':'delete',d.hidden&&!d.added?{h:d.h,name:'visible',value:'true'}:{h:d.h})},d.added?t.del:d.hidden?t.show:t.hide),info('feat','hide')));
   if(d.textSetByGame)f.append(el('div',{cls:'note'},t.game));
   const by=Object.fromEntries(d.attributes.map(a=>[a.name,a]));
-  f.append(el('h3',{},t.basic));BASIC.filter(n=>by[n]).forEach(n=>f.append(field(by[n])));
-  if(d.parts&&d.parts.length){f.append(el('h3',{},t.parts));d.parts.forEach(p=>f.append(el('div',{cls:'row',onclick:()=>pickHandle(p.h)},el('span',{},title(p)),el('span',{cls:'ty'},p.type))))}
-  f.append(el('h3',{},t.classes));const cl=el('div',{cls:'bar',style:'padding:0;border:0'});
-  d.classes.forEach(c=>cl.append(el('button',{title:'−',onclick:()=>act('class',{h:d.h,name:c,on:false})},c+' ✕')));
-  const ci=el('input',{placeholder:'+ class',style:'width:120px',onchange:e=>act('class',{h:d.h,name:e.target.value.trim(),on:true})});cl.append(ci,el('button',{onclick:shared},t.shared));f.append(cl);
-  const adv=el('details',{ontoggle:e=>advOpen=e.target.open},el('summary',{cls:'dim'},t.adv));if(advOpen)adv.open=true;
+  f.append(el('h3',{},t.basic,info('feat','basic')));BASIC.filter(n=>by[n]).forEach(n=>f.append(field(by[n])));
+  if(d.parts&&d.parts.length){f.append(el('h3',{},t.parts,info('feat','parts')));d.parts.forEach(p=>f.append(el('div',{cls:'row',onclick:()=>pickHandle(p.h)},el('span',{},title(p)),el('span',{cls:'ty'},nm('type.'+p.type,p.type)),info('type',p.type))))}
+  f.append(el('h3',{},t.classes,info('feat','classes')));const cl=el('div',{cls:'bar',style:'padding:0;border:0'});
+  d.classes.forEach(c=>cl.append(el('button',{title:'−',onclick:()=>act('class',{h:d.h,name:c,on:false})},c+' ✕'),info('class',c,null,c)));
+  const ci=el('input',{placeholder:'+ class',style:'width:120px',onchange:e=>act('class',{h:d.h,name:e.target.value.trim(),on:true})});cl.append(ci,el('button',{onclick:shared},t.shared),info('feat','shared'));f.append(cl);
+  const adv=el('details',{ontoggle:e=>advOpen=e.target.open},el('summary',{cls:'dim'},t.adv,info('feat','adv')));if(advOpen)adv.open=true;
   const list=el('div',{}),rest=d.attributes.filter(a=>!BASIC.includes(a.name));
-  const fill=()=>list.replaceChildren(...rest.filter(a=>a.name.toLowerCase().includes(filter)).sort((a,b)=>(b.own?1:0)-(a.own?1:0)||a.name.localeCompare(b.name)).map(field));
+  const fill=()=>list.replaceChildren(...rest.filter(a=>(a.name+about('attr',a.name)[0]).toLowerCase().includes(filter)).sort((a,b)=>(b.own?1:0)-(a.own?1:0)||a.name.localeCompare(b.name)).map(field));
   adv.append(el('input',{placeholder:t.filter,value:filter,style:'width:100%;margin:6px 0',oninput:e=>{filter=e.target.value.toLowerCase();fill()}}),list);fill();f.append(adv);
   if(d.type==='Button'||d.template)f.append(actionBox(d));
-  f.append(el('h3',{},t.where));
+  f.append(el('h3',{},t.where,info('feat','where')));
   if(d.src)f.append(el('code',{},d.src));else f.append(el('div',{cls:'dim small'},t.built));
   if(d.source)f.append(el('div',{},el('code',{},d.source)));
   if(d.inTemplate)f.append(el('div',{cls:'note'},t.inTmpl));
@@ -196,18 +289,19 @@ async function addDialog(parent,index){
   let p;try{p=await api('palette',{h:parent})}catch(e){say(e.message,true);return}
   const has=new Set(p.templates.map(x=>x.id)),dlg=$('dlg'),txt=el('input',{value:lang==='pt'?'Novo item':'New item',style:'width:100%'});
   const put=async b=>{dlg.close();const r=await act('add',{parent,index,...b});if(r){open.add(parent);drawTree()}};
-  const cards=el('div',{cls:'cards'});for(const k in KINDS){const b=KINDS[k]('x');cards.append(el('button',{dis:!!b.need&&!has.has(b.need),onclick:()=>put(KINDS[k](txt.value))},t.k[k]))}
-  const more=el('select',{style:'width:100%',onchange:e=>{if(e.target.value)put({xml:`<Instance templateId="${esc(e.target.value)}"/>`})}},el('option',{value:''},'—'),...p.templates.map(x=>el('option',{value:x.id},x.id)));
-  dlg.replaceChildren(el('h3',{},t.addTitle),el('div',{cls:'field'},el('label',{},t.label),txt),cards,el('h3',{},t.more),more,el('p',{},el('button',{onclick:()=>dlg.close()},t.close)));dlg.showModal();txt.select();
+  const cards=el('div',{cls:'cards'});for(const k in KINDS){const b=KINDS[k]('x');cards.append(el('button',{dis:!!b.need&&!has.has(b.need),onclick:()=>put(KINDS[k](txt.value))},el('b',{},t.k[k]),el('div',{cls:'dim small'},about('kind',k)[1])))}
+  const more=el('select',{style:'width:100%',onchange:e=>{const v=e.target.value;moreInfo.textContent=v?about('tmpl',v)[1]:'';moreInfo.hidden=moreB.disabled=!v}},el('option',{value:''},'—'),...p.templates.map(x=>el('option',{value:x.id},about('tmpl',x.id)[0]===x.id?x.id:about('tmpl',x.id)[0]+' ('+x.id+')')));
+  const moreInfo=el('div',{cls:'info'}),moreB=el('button',{dis:true,onclick:()=>put({xml:`<Instance templateId="${esc(more.value)}"/>`})},t.add);moreInfo.hidden=true;
+  dlg.replaceChildren(el('h3',{},t.addTitle),el('div',{cls:'field'},el('label',{cls:'fl'},t.label,info('feat','label')),txt),cards,el('h3',{},t.more,info('feat','more')),more,moreInfo,el('p',{},moreB,' ',el('button',{onclick:()=>dlg.close()},t.close)));dlg.showModal();txt.select();
 }
 async function changes(){const list=await api('changes').catch(e=>(say(e.message,true),null));if(!list)return;const dlg=$('dlg');
-  dlg.replaceChildren(el('h3',{},t.changes),list.length?el('ol',{},...list.map(s=>el('li',{},(s.by==='claude'?'Claude: ':'')+s.text+(s.exact?'':' ('+t.notExact+')')))):el('p',{cls:'dim'},t.nothing),el('button',{onclick:()=>dlg.close()},t.close));dlg.showModal()}
+  dlg.replaceChildren(el('h3',{},t.changes,info('feat','list')),list.length?el('ol',{},...list.map(s=>el('li',{},(s.by==='claude'?'Claude: ':'')+s.text+(s.exact?'':' ('+t.notExact+')')))):el('p',{cls:'dim'},t.nothing),el('button',{onclick:()=>dlg.close()},t.close));dlg.showModal()}
 
 // ---- panels, places and actions ----
 async function panels(){
   const p=await api('panels').catch(e=>(say(e.message,true),null));if(!p)return;const dlg=$('dlg'),name=el('input',{placeholder:t.name,style:'flex:1'});
   const go=async(path,b)=>{const r=await act(path,b);if(r){dlg.close();if(r.h)open.add(r.h)}return r};
-  dlg.replaceChildren(el('h3',{},t.panels),...p.map(x=>el('div',{cls:'bar'},el('b',{cls:'grow'},x.title),el('button',{onclick:()=>go('panel_open',{uid:x.uid})},t.openP),el('button',{cls:'danger',onclick:()=>go('panel_remove',{uid:x.uid})},t.removeP))),
+  dlg.replaceChildren(el('h3',{},t.panels,info('feat','panels')),...p.map(x=>el('div',{cls:'bar'},el('b',{cls:'grow'},x.title),el('button',{onclick:()=>go('panel_open',{uid:x.uid})},t.openP),el('button',{cls:'danger',onclick:()=>go('panel_remove',{uid:x.uid})},t.removeP))),
     el('div',{cls:'bar'},name,el('button',{cls:'main',onclick:()=>go('panel_new',{title:name.value})},t.newPanel)),el('button',{onclick:()=>dlg.close()},t.close));
   if(!dlg.open)dlg.showModal();
 }
@@ -216,13 +310,13 @@ async function places(){try{const l=await api('places'),s=$('places');const txt=
   s.replaceChildren(el('option',{value:''},t.places),...l.map(x=>el('option',{value:x.h},txt(x.name))))}catch(e){}}
 $('places').onchange=e=>{const h=+e.target.value;e.target.value='';if(h)pickHandle(h)};
 function actionBox(d){
-  const a=d.action||{kind:'none',args:{}},box=el('div',{},el('h3',{},t.act)),inner=el('div',{});
+  const a=d.action||{kind:'none',args:{}},box=el('div',{},el('h3',{},t.act,info('feat','act'))),inner=el('div',{}),ki=el('div',{cls:'info'});
   const opt=(v,x,cur)=>{const o=el('option',{value:v},x);if(v===cur)o.selected=true;return o};
   const kind=el('select',{style:'width:100%','aria-label':t.act,onchange:()=>fill(kind.value,{})},...Object.keys(t.ak).map(k=>opt(k,t.ak[k],a.kind)));
   const row=(l,i)=>el('div',{cls:'field'},el('label',{},l),i);
   const apply=get=>el('button',{cls:'main',onclick:()=>{const g=get();act('action',{h:d.h,kind:kind.value,args:g})}},t.apply);
   async function fill(k,v){
-    inner.replaceChildren();
+    inner.replaceChildren();ki.textContent=about('act',k)[1];
     if(k==='none'){if(a.kind!=='none')inner.append(apply(()=>({})));return}
     if(k==='panel'){const s=el('select',{style:'width:100%'},...(await api('panels')).map(x=>opt(x.uid,x.title,v.panel)));inner.append(s,apply(()=>({panel:s.value})))}
     if(k==='link'){const i=el('input',{value:v.url||'https://',style:'width:100%'});inner.append(i,apply(()=>({url:i.value.trim()})))}
@@ -232,33 +326,33 @@ function actionBox(d){
     if(k==='variable'){const n=el('input',{value:v.name||''}),lo=el('input',{value:v.min||'0'}),hi=el('input',{value:v.max||'1'});inner.append(row(t.varName,n),row(t.min,lo),row(t.max,hi),apply(()=>({name:n.value.trim(),min:lo.value,max:hi.value})))}
     if(k==='mod'){const l=await api('mod_actions');if(!l.length){inner.append(el('p',{cls:'dim'},t.noMod));return}const s=el('select',{style:'width:100%'},...l.map(x=>opt(x,x,v.name)));inner.append(s,apply(()=>({name:s.value})))}
     if(k==='method'){
-      const all=await api('methods',{h:d.h}),q=el('input',{placeholder:t.filterM,style:'width:100%'}),s=el('select',{size:8,style:'width:100%'}),ar=el('div',{});
-      const list=()=>{const f=q.value.toLowerCase();s.replaceChildren(...all.map((m,i)=>[m,i]).filter(([m])=>(m.of+m.method).toLowerCase().includes(f)).slice(0,300).map(([m,i])=>opt(''+i,m.of+' · '+m.method,m.root===v.root&&m.method===v.method?''+i:'')));ins()};
-      const ins=()=>{const m=all[+s.value];ar.replaceChildren(...(s.value===''||!m?[]:m.args.map((n,i)=>row(n,el('input',{value:v['a'+i]||''})))))};
+      const all=await api('methods',{h:d.h}),q=el('input',{placeholder:t.filterM,style:'width:100%'}),s=el('select',{size:8,style:'width:100%'}),ar=el('div',{}),mi=el('div',{cls:'info'});
+      const list=()=>{const f=q.value.toLowerCase();s.replaceChildren(...all.map((m,i)=>[m,i]).filter(([m])=>(m.of+m.method+about('meth',m.method.split('(')[0]).join(' ')).toLowerCase().includes(f)).slice(0,300).map(([m,i])=>opt(''+i,about('meth',m.method.split('(')[0])[0]+' · '+m.of+'.'+m.method,m.root===v.root&&m.method===v.method?''+i:'')));ins()};
+      const ins=()=>{const m=all[+s.value],ok=s.value!==''&&m;mi.hidden=!ok;if(ok)mi.textContent=about('meth',m.method.split('(')[0])[1];ar.replaceChildren(...(s.value===''||!m?[]:m.args.map((n,i)=>row(n,el('input',{value:v['a'+i]||''})))))};
       q.oninput=list;s.onchange=ins;list();
-      inner.append(q,s,ar,el('p',{cls:'note'},t.askM),apply(()=>{const m=all[+s.value];if(s.value===''||!m)return{};const g={root:m.root,method:m.method};[...ar.querySelectorAll('input')].forEach((x,i)=>{if(x.value!=='')g['a'+i]=x.value});return g}));
+      inner.append(q,s,mi,ar,el('p',{cls:'note'},t.askM),apply(()=>{const m=all[+s.value];if(s.value===''||!m)return{};const g={root:m.root,method:m.method};[...ar.querySelectorAll('input')].forEach((x,i)=>{if(x.value!=='')g['a'+i]=x.value});return g}));
     }
     if(k==='config'){
       const want=d.template==='control-toggle'?['bool']:/slider/.test(d.template||'')?['number']:null,all=(await api('configs')).filter(c=>!want||want.includes(c.kind));
-      const q=el('input',{placeholder:t.filterC,style:'width:100%'}),s=el('select',{size:8,style:'width:100%'}),info=el('p',{cls:'dim small'}),fixed=el('input',{value:v.value||'',placeholder:t.valueC,style:'width:100%'});
+      const q=el('input',{placeholder:t.filterC,style:'width:100%'}),s=el('select',{size:8,style:'width:100%'}),note=el('div',{cls:'info'}),fixed=el('input',{value:v.value||'',placeholder:t.valueC,style:'width:100%'});
       const id=c=>JSON.stringify([c.plugin,c.section,c.key]),cur=v.key?id(v):'';
       const list=()=>{const f=q.value.toLowerCase();s.replaceChildren(...all.filter(c=>(c.mod+c.section+c.key+c.text).toLowerCase().includes(f)).slice(0,300).map(c=>opt(id(c),c.mod+' · '+c.section+' · '+c.key+' = '+c.value,cur)));say2()};
-      const say2=()=>{const c=all.find(x=>id(x)===s.value);info.textContent=c?c.text:''};
+      const say2=()=>{const c=all.find(x=>id(x)===s.value);note.hidden=!c;note.textContent=c?(c.text||about('setting',c.key)[1]):''};
       q.oninput=list;s.onchange=say2;list();
-      inner.append(q,s,info,d.type==='Button'?fixed:'',apply(()=>{if(!s.value)return{};const[p,se,ke]=JSON.parse(s.value),g={plugin:p,section:se,key:ke};if(d.type==='Button'&&fixed.value.trim())g.value=fixed.value.trim();return g}));
+      inner.append(q,s,note,d.type==='Button'?fixed:'',apply(()=>{if(!s.value)return{};const[p,se,ke]=JSON.parse(s.value),g={plugin:p,section:se,key:ke};if(d.type==='Button'&&fixed.value.trim())g.value=fixed.value.trim();return g}));
     }
   }
-  box.append(kind,inner);fill(a.kind,a.args).catch(e=>say(e.message,true));return box;
+  box.append(kind,ki,inner);fill(a.kind,a.args).catch(e=>say(e.message,true));return box;
 }
 
 async function shared(){
   const p=await api('styles',{h:sel}).catch(e=>(say(e.message,true),null));if(!p)return;const dlg=$('dlg');
-  const one=(target,a)=>{const put=async v=>{if(v!==a.value&&await act('style',{h:sel,target,name:a.name,value:v}))shared()};
+  const one=(target,a)=>{const isC=target.startsWith('const:');const put=async v=>{if(v!==a.value&&await act('style',{h:sel,target,name:a.name,value:v}))shared()};
     const i=el('input',{value:a.value,onchange:e=>put(e.target.value),'aria-label':a.name});
-    return el('div',{cls:'field'+(a.edited?' edited':'')},el('label',{title:a.name},a.name),a.color?el('div',{cls:'pair'},el('input',{type:'color',value:hex(a.value),onchange:e=>put(e.target.value),'aria-label':a.name}),i):i)};
+    return el('div',{cls:'field'+(a.edited?' edited':'')},el('label',{cls:'fl'},el('span',{},about(isC?'const':'attr',a.name)[0]),info(isC?'const':'attr',a.name,a.color?howTo('color'):null,a.name)),a.color?el('div',{cls:'pair'},el('input',{type:'color',value:hex(a.value),onchange:e=>put(e.target.value),'aria-label':a.name}),i):i)};
   const top=dlg.scrollTop;
-  dlg.replaceChildren(el('h3',{},t.shared),el('div',{cls:'note'},t.sharedP),...p.styles.map(s=>el('details',{open:''},el('summary',{},el('b',{},s.class)),...s.attributes.map(a=>one('style:'+s.class,a)))),
-    el('details',{},el('summary',{},el('b',{},t.consts)),el('p',{cls:'dim small'},t.constP),...p.constants.map(a=>one('const:'+a.name,a))),el('button',{onclick:()=>dlg.close()},t.close));
+  dlg.replaceChildren(el('h3',{},t.shared,info('feat','shared')),el('div',{cls:'note'},t.sharedP),...p.styles.map(s=>el('details',{open:''},el('summary',{},el('b',{},about('class',s.class)[0]),info('class',s.class,null,s.class)),...s.attributes.map(a=>one('style:'+s.class,a)))),
+    el('details',{},el('summary',{},el('b',{},t.consts),info('feat','consts')),el('p',{cls:'dim small'},t.constP),...p.constants.map(a=>one('const:'+a.name,a))),el('button',{onclick:()=>dlg.close()},t.close));
   if(!dlg.open)dlg.showModal();dlg.scrollTop=top;
 }
 async function exportP(name){const r=await act('export',{name});if(!r)return;const dlg=$('dlg');
@@ -270,13 +364,13 @@ async function packages(){
   const again=async(path,b)=>{if(await act(path,b))packages()};
   const name=el('input',{placeholder:t.name,style:'flex:1'});
   const list=p.packages.map((k,i)=>el('details',{},el('summary',{},el('b',{},k.name),' ('+k.ops.length+') ',k.name===p.current?el('span',{cls:'tag'},t.cur):''),
-    el('div',{cls:'bar'},(()=>{const c=el('input',{type:'checkbox',onchange:e=>again('package_enable',{name:k.name,on:e.target.checked})});c.checked=k.on;return el('label',{},c,' '+t.on)})(),
-      el('button',{dis:k.name===p.current,onclick:()=>again('package_use',{name:k.name})},t.usep),
-      el('button',{dis:i===0,onclick:()=>again('package_order',{name:k.name,index:i-1})},t.up),el('button',{dis:i===p.packages.length-1,onclick:()=>again('package_order',{name:k.name,index:i+1})},t.down),el('button',{onclick:()=>exportP(k.name)},t.exp)),
-    el('ul',{},...k.ops.map((o,n)=>el('li',{title:o.why||''},o.text+' ',el('span',{cls:'dim small'},t.st[o.state]+' '),o.state==='session'?'':el('button',{onclick:()=>again('package_drop',{name:k.name,index:n})},'✕'))))));
-  const block=(h,a)=>a.length?[el('h3',{},h),el('ul',{},...a.map(x=>el('li',{},x)))]:[];
-  dlg.replaceChildren(el('h3',{},t.packs),...(list.length?list:[el('p',{cls:'dim'},t.noneP)]),el('div',{cls:'bar'},name,el('button',{cls:'main',onclick:()=>again('package_new',{name:name.value})},t.newp)),
-    ...block(t.conf,p.conflicts),...block(t.prob,p.problems),el('p',{cls:'dim small'},t.folder+': '+p.folder),el('button',{onclick:()=>dlg.close()},t.close));
+    el('div',{cls:'bar'},(()=>{const c=el('input',{type:'checkbox',onchange:e=>again('package_enable',{name:k.name,on:e.target.checked})});c.checked=k.on;return el('label',{},c,' '+t.on,info('feat','onPack'))})(),
+      el('button',{dis:k.name===p.current,onclick:()=>again('package_use',{name:k.name})},t.usep),info('feat','usePack'),
+      el('button',{dis:i===0,onclick:()=>again('package_order',{name:k.name,index:i-1})},t.up),el('button',{dis:i===p.packages.length-1,onclick:()=>again('package_order',{name:k.name,index:i+1})},t.down),info('feat','orderPack'),el('button',{onclick:()=>exportP(k.name)},t.exp),info('feat','export')),
+    el('ul',{},...k.ops.map((o,n)=>el('li',{title:o.why||''},o.text+' ',el('span',{cls:'dim small'},t.st[o.state]+' '),o.state==='session'?'':el('button',{onclick:()=>again('package_drop',{name:k.name,index:n})},'✕'),o.state==='session'?'':info('feat','dropPack'))))));
+  const block=(h,a,k)=>a.length?[el('h3',{},h,info('feat',k)),el('ul',{},...a.map(x=>el('li',{},x)))]:[];
+  dlg.replaceChildren(el('h3',{},t.packs,info('feat','packs')),...(list.length?list:[el('p',{cls:'dim'},t.noneP)]),el('div',{cls:'bar'},name,el('button',{cls:'main',onclick:()=>again('package_new',{name:name.value})},t.newp),info('feat','newPack')),
+    ...block(t.conf,p.conflicts,'conflicts'),...block(t.prob,p.problems,'problems'),el('p',{cls:'dim small'},t.folder+': '+p.folder),el('button',{onclick:()=>dlg.close()},t.close));
   if(!dlg.open)dlg.showModal();
 }
 async function save(){if(!state.package){packages();return}if(await act('save'))say(t.saved+' '+state.package)}
@@ -305,11 +399,12 @@ async function tick(){
   }catch(e){if(++misses>2&&!e.answered||e.message==='wrong key')$('off').style.display='flex'}
   ticking=false;if(again){again=false;tick()}
 }
-$('pick').onclick=()=>act('pick',{on:!state.picking});$('undo').onclick=()=>act('undo');$('redo').onclick=()=>act('redo');$('list').onclick=changes;$('packs').onclick=packages;$('panelsB').onclick=panels;$('save').onclick=save;
+$('help').onclick=helpDialog;$('pick').onclick=()=>act('pick',{on:!state.picking});$('undo').onclick=()=>act('undo');$('redo').onclick=()=>act('redo');$('list').onclick=changes;$('packs').onclick=packages;$('panelsB').onclick=panels;$('save').onclick=save;
 $('claude').onchange=e=>act('allow',{on:e.target.checked});$('lang').onchange=e=>{lang=e.target.value;store('lang',lang);words();tick()};
 $('vis').onchange=$('reload').onclick=drawTree;let st;$('search').oninput=()=>{clearTimeout(st);st=setTimeout(drawTree,250)};
 addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){if(e.key==='z'){e.preventDefault();act('undo')}if(e.key==='y'){e.preventDefault();act('redo')}}});
-words();tick();setInterval(tick,700);setInterval(()=>{if($('live').checked)shot()},700);
+words();tick();if(!store('seen')){store('seen','1');helpDialog()}
+setInterval(tick,700);setInterval(()=>{if($('live').checked)shot()},700);
 </script>
 </body>
 </html>

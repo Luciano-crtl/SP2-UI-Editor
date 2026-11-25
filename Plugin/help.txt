@@ -1,0 +1,508 @@
+# key|name pt|description pt|name en|description en      (one line each; shown by the (!) of the editor's window)
+# ---- features of the window ----
+feat.pick|Escolher no jogo|Liga o modo de escolha. Vá ao jogo, passe o mouse e clique no que quer mudar: ele fica com um contorno azul e aparece à direita. Esc cancela. O clique não aciona o botão do jogo.|Pick in the game|Turns on picking. Go to the game, move the mouse and click what you want to change: it gets a blue outline and shows on the right. Esc cancels. The click does not press the game's button.
+feat.undo|Desfazer|Volta a última mudança, como Ctrl+Z. Pode apertar várias vezes. Desfaz também o que o Claude mudou.|Undo|Takes back the last change, like Ctrl+Z. Press it as often as you want. It also takes back what Claude changed.
+feat.redo|Refazer|Faz de novo o que você acabou de desfazer (Ctrl+Y).|Redo|Does again what you have just undone (Ctrl+Y).
+feat.list|Mudanças|Mostra tudo o que foi mudado nesta sessão, em ordem, e quem mudou (você ou o Claude).|Changes|Shows all that was changed in this session, in order, and by whom (you or Claude).
+feat.panels|Painéis|Cria janelas suas dentro do jogo. Uma janela nova começa vazia: você põe nela seções, textos e botões.|Panels|Makes windows of your own inside the game. A new window starts empty: you put sections, texts and buttons in it.
+feat.packs|Pacotes|Um pacote é um arquivo que guarda as suas mudanças. Você pode ter vários, ligar e desligar cada um e mandar o arquivo para um amigo.|Packages|A package is a file that keeps your changes. You can have several, switch each on or off, and send the file to a friend.
+feat.save|Salvar|Guarda as mudanças no pacote atual. Sem salvar, elas se perdem quando o jogo fecha.|Save|Keeps the changes in the current package. Without saving they are lost when the game closes.
+feat.claude|Claude pode editar|Deixa o assistente Claude mudar a interface. Desmarcado, ele só pode olhar e apontar elementos. Desliga sozinho quando o plugin recarrega.|Claude may edit|Lets the Claude assistant change the interface. Unchecked, it can only look and point at elements. Goes off by itself when the plugin reloads.
+feat.lang|Idioma|Troca o idioma desta janela. Não muda o jogo.|Language|Changes the language of this window. It does not change the game.
+feat.search|Busca|Escreva uma palavra que aparece no jogo (como BUILD) para achar o elemento que a mostra.|Search|Type a word that shows in the game (such as BUILD) to find the element that shows it.
+feat.vis|Só visível|Marcado, a lista mostra só o que está na tela agora. Desmarque para achar coisas escondidas.|Visible only|Checked, the list only shows what is on the screen now. Uncheck it to find hidden things.
+feat.reload|Atualizar|Lê de novo a lista de elementos do jogo.|Refresh|Reads the game's list of elements again.
+feat.places|Ir para um lugar|Atalho para os lugares mais úteis: menu de voo, barra do designer, propriedades da peça e os seus painéis abertos.|Go to a place|Shortcut to the most useful places: flight menu, designer bar, part properties and your open panels.
+feat.tree|Árvore de elementos|A interface é feita de caixas dentro de caixas. Clique na setinha para abrir uma caixa e no nome para escolher. Arraste um item para mudar a ordem. Cinza = escondido. Verde com + = criado por você.|Element tree|The interface is made of boxes inside boxes. Click the little arrow to open a box and the name to pick it. Drag an item to change the order. Gray = hidden. Green + = made by you.
+feat.shot|Imagem do jogo|Uma foto do jogo, atualizada o tempo todo. Clique nela para escolher um elemento sem ir até o jogo.|Picture of the game|A picture of the game, refreshed all the time. Click it to pick an element without going to the game.
+feat.live|Imagem ao vivo|Desmarque se o jogo ficar lento: a imagem só atualiza quando algo muda.|Live picture|Uncheck it if the game gets slow: the picture is then only refreshed when something changes.
+feat.crumbs|Caminho|Mostra dentro de que caixas este elemento está. Clique num nome para subir até ele: se você escolheu o texto de um botão, o nome antes dele é o botão.|Path|Shows which boxes this element is in. Click a name to go up to it: if you picked a button's text, the name before it is the button.
+feat.addInside|Adicionar: Dentro|Põe algo novo dentro deste elemento, no fim. Serve para caixas, listas e painéis.|Add: Inside|Puts something new inside this element, at its end. For boxes, lists and panels.
+feat.addAfter|Adicionar: Depois|Põe algo novo logo depois deste elemento, no mesmo lugar.|Add: After|Puts something new right after this element, in the same place.
+feat.move|Subir e Descer|Muda a ordem do elemento entre os vizinhos. Só se nota em listas e fileiras.|Up and Down|Changes the element's order among its neighbors. You only notice it in lists and rows.
+feat.hide|Esconder ou Remover|O que é do jogo fica só escondido (dá para mostrar de novo). O que você criou é removido.|Hide or Remove|What belongs to the game is only hidden (it can be shown again). What you made is removed.
+feat.basic|Básico|As propriedades mais usadas. Mude um valor e aperte Enter ou clique fora: o jogo muda na hora. Nome em amarelo = você já mudou.|Basic|The properties used most. Change a value and press Enter or click elsewhere: the game changes at once. Yellow name = you changed it.
+feat.adv|Avançado|Todas as outras propriedades. Não é preciso mexer aqui para o uso comum; o Desfazer conserta qualquer engano.|Advanced|All other properties. No need to touch these for common use; Undo fixes any mistake.
+feat.parts|Textos e partes|Os textos e imagens que formam este elemento. Para mudar o que está escrito num botão, clique no texto aqui.|Texts and parts|The texts and pictures this element is made of. To change what a button says, click its text here.
+feat.classes|Classes de estilo|Uma classe é uma aparência pronta com nome, como btn-danger (vermelho). Adicione ou tire classes para mudar a aparência de uma vez.|Style classes|A class is a ready look with a name, such as btn-danger (red). Add or take classes to change the look at once.
+feat.shared|Estilos gerais|Muda a própria classe, e com ela TODOS os elementos que a usam. Para mudar só este, use as propriedades.|Shared styles|Changes the class itself, and with it EVERY element that uses it. To change only this one, use the properties.
+feat.consts|Constantes do jogo|Valores com nome usados em muitos lugares, como a cor principal. Mudar um muda todos os que o usam.|Constants of the game|Named values used in many places, such as the main color. Changing one changes all that use it.
+feat.act|O que faz|O que acontece quando alguém clica no botão, ou mexe no liga/desliga ou no controle deslizante. Não é preciso programar.|What it does|What happens when someone clicks the button, or moves the toggle or slider. No programming needed.
+feat.where|De onde vem|O arquivo do jogo que desenha este elemento. Só informação; útil para quem faz mods.|Where it comes from|The game file that draws this element. Only information; useful to people who make mods.
+feat.newPack|Novo pacote|Cria um arquivo vazio para guardar as suas mudanças e passa a salvar nele.|New package|Makes an empty file for your changes and starts saving in it.
+feat.usePack|Editar este|As próximas mudanças passam a ser salvas neste pacote.|Edit this one|The next changes are saved in this package.
+feat.onPack|Ligado|Desligar desfaz na hora tudo o que o pacote muda. O arquivo continua lá.|On|Switching it off takes back at once all that the package changes. The file stays.
+feat.orderPack|Ordem|Se dois pacotes mudam a mesma coisa, vale o que está mais embaixo.|Order|If two packages change the same thing, the lower one counts.
+feat.dropPack|Tirar uma edição|O X apaga só aquela mudança do pacote.|Take out an edit|The X deletes only that change from the package.
+feat.export|Exportar XML e C#|Para quem programa: transforma o pacote em código pronto para um mod.|Export XML and C#|For programmers: turns the package into code ready for a mod.
+feat.conflicts|Conflitos|Dois pacotes querem coisas diferentes do mesmo elemento. Vale o último da lista.|Conflicts|Two packages want different things of the same element. The last one in the list counts.
+feat.problems|Problemas|Arquivos que não puderam ser lidos, ou edições recusadas por segurança.|Problems|Files that could not be read, or edits refused for safety.
+feat.label|Texto|O que vai estar escrito no item novo. Você pode mudar depois.|Text|What the new item will say. You can change it later.
+feat.more|Outros modelos|Peças prontas que esta tela do jogo já tem. Escolha uma para ver a descrição.|Other templates|Ready pieces this screen of the game already has. Pick one to see its description.
+# ---- things to add ----
+kind.header|Seção|Uma faixa com título. Clicar nela esconde ou mostra o que vem depois, até a próxima seção.|Section|A band with a title. Clicking it hides or shows what follows, up to the next section.
+kind.btn|Botão|Um botão. Depois de criar, escolha em "O que faz" o que acontece no clique.|Button|A button. After making it, choose under "What it does" what a click does.
+kind.btns|Linha de botões|Dois botões lado a lado.|Row of buttons|Two buttons side by side.
+kind.text|Linha com valor|Um nome à esquerda e um valor à direita. Pode mostrar uma configuração de um mod.|Line with a value|A name on the left and a value on the right. It can show a mod's setting.
+kind.para|Parágrafo|Um texto solto que quebra em várias linhas.|Paragraph|A free text that wraps into several lines.
+kind.toggle|Liga/desliga|Uma chave sim/não. Ligue-a a uma configuração de mod ou variável em "O que faz".|Toggle|A yes/no switch. Tie it to a mod's setting or a variable under "What it does".
+kind.slider|Controle deslizante|Uma barra para escolher um número. Ligue-a a uma configuração de mod ou variável em "O que faz".|Slider|A bar to choose a number. Tie it to a mod's setting or a variable under "What it does".
+kind.img|Imagem|Um quadrado colorido que pode receber uma figura do jogo (propriedade Imagem).|Image|A colored square that can take one of the game's pictures (property Image).
+# ---- actions ----
+act.none|Nada|O elemento não faz nada além do que o jogo já faz com ele.|Nothing|The element does nothing besides what the game already does with it.
+act.panel|Abrir ou fechar painel|Abre uma janela sua; se já estiver aberta, fecha.|Open or close a panel|Opens a window of yours; closes it if it is open.
+act.element|Mostrar/esconder elemento|Esconde, mostra ou alterna outro elemento da tela. Busque-o pelo texto.|Show/hide an element|Hides, shows or toggles another element of the screen. Search it by its text.
+act.link|Abrir link|Abre um endereço da internet no navegador. O jogo sempre pergunta antes.|Open a link|Opens an internet address in the browser. The game always asks first.
+act.config|Configuração de mod|Muda uma opção de um mod instalado. A lista mostra a explicação de cada opção.|Mod setting|Changes an option of an installed mod. The list shows what each option is for.
+act.variable|Variável da nave|Escreve um número numa variável da sua nave, que as expressões (Funky Trees) das peças podem usar. Mínimo = desligado, máximo = ligado.|Craft variable|Writes a number to a variable of your craft, which the parts' expressions (Funky Trees) can use. Minimum = off, maximum = on.
+act.mod|Ação de um mod|Roda algo que outro mod oferece. A lista fica vazia se nenhum mod oferecer.|Action of a mod|Runs something another mod offers. The list is empty if no mod offers any.
+act.method|Método do jogo|Um método é um comando interno do jogo. No primeiro clique o jogo mostra o comando e pede a sua permissão.|Method of the game|A method is an internal command of the game. At the first click the game shows the command and asks for your permission.
+# ---- how to write values ----
+how.bool|Sim ou não|true = sim, false = não.|Yes or no|true = yes, false = no.
+how.color|Cor|Use o quadradinho ou escreva #RRGGBB (ex.: #FF0000 = vermelho). Com mais dois dígitos no fim você controla a transparência: #FF000080 = meio transparente.|Color|Use the little square or write #RRGGBB (e.g. #FF0000 = red). Two more digits at the end set the transparency: #FF000080 = half transparent.
+how.float|Número|Um número; decimais com ponto (1.5).|Number|A number; decimals with a point (1.5).
+how.int|Número inteiro|Um número sem decimais.|Whole number|A number without decimals.
+how.vector2|Dois números|Horizontal e vertical, separados por espaço (ex.: 10 -20).|Two numbers|Horizontal and vertical, with a space between (e.g. 10 -20).
+how.rectoffset|Quatro lados|Um número para todos os lados (10), dois (cima/baixo e lados) ou quatro: cima direita baixo esquerda (5 10 5 10).|Four sides|One number for all sides (10), two (top/bottom and sides) or four: top right bottom left (5 10 5 10).
+how.enum|Lista|Escolha uma das opções da lista.|List|Choose one of the options of the list.
+how.string|Texto|Escreva livremente. Não use chaves { }.|Text|Write freely. Do not use braces { }.
+how.sound|Som|Caminho de um som do jogo (ex.: Sounds/ButtonClick-2). Uma @Constante também serve.|Sound|Path of a game sound (e.g. Sounds/ButtonClick-2). A @Constant works too.
+how.animation|Animação|Nome da animação e tempo (ex.: GrowBoth:OutBack 0.25).|Animation|Name of the animation and time (e.g. GrowBoth:OutBack 0.25).
+how.colorblock|Conjunto de cores|Cores normal, com o mouse em cima, apertado, escolhido e desativado, separadas por espaço.|Set of colors|Colors for normal, under the mouse, pressed, selected and disabled, separated by spaces.
+# ---- kinds of element ----
+type.Empty|Caixa vazia|Um espaço invisível que guarda outros elementos.|Empty box|An invisible space that holds other elements.
+type.Text|Texto|Algo escrito na tela.|Text|Something written on the screen.
+type.TextMeshPro|Texto|Algo escrito na tela.|Text|Something written on the screen.
+type.Image|Imagem|Uma figura, ícone ou fundo colorido.|Image|A picture, icon or colored background.
+type.RawImage|Imagem crua|Uma figura mostrada inteira, como uma foto ou o que uma câmera vê.|Raw image|A picture shown whole, such as a photo or what a camera sees.
+type.Button|Botão|Algo que se clica. O que está escrito nele é um Texto dentro dele.|Button|Something to click. What it says is a Text inside it.
+type.Row|Linha|Uma linha dividida em 12 colunas; cada item ocupa algumas.|Row|A line divided in 12 columns; each item takes some.
+type.VerticalLayout|Lista vertical|Empilha os itens de cima para baixo.|Vertical list|Stacks its items from top to bottom.
+type.HorizontalLayout|Fileira|Põe os itens lado a lado.|Horizontal list|Puts its items side by side.
+type.Layout|Lista ou fileira|Arruma os itens sozinha, em coluna ou lado a lado.|List|Arranges its items by itself, in a column or side by side.
+type.GridLayout|Grade|Arruma os itens em linhas e colunas do mesmo tamanho.|Grid|Arranges its items in rows and columns of one size.
+type.ScrollView|Área com rolagem|Mostra um conteúdo maior que ela, com barra de rolagem. Só aceita um item dentro (em geral uma lista).|Scroll area|Shows content bigger than itself, with a scroll bar. It takes a single item (usually a list).
+type.Spacer|Espaço|Um vão em branco entre itens.|Spacer|A blank gap between items.
+type.Slider|Barra deslizante|A barra de um controle deslizante.|Slider bar|The bar of a slider.
+type.RangeSlider|Barra de intervalo|Uma barra com dois pegadores, para escolher um mínimo e um máximo.|Range bar|A bar with two handles, to choose a minimum and a maximum.
+type.Toggle|Chave|A parte clicável de um liga/desliga.|Switch|The part of a toggle that is clicked.
+type.Input|Campo de texto|Um lugar para digitar.|Text box|A place to type in.
+type.ProgressBar|Barra de progresso|Uma barra que enche.|Progress bar|A bar that fills.
+type.Audio|Som|Um som que toca. Não aparece na tela.|Sound|A sound that plays. Not seen on the screen.
+type.Canvas|Camada|Uma camada inteira da tela.|Layer|A whole layer of the screen.
+type.File|Arquivo|Um pedaço de tela guardado em outro arquivo do jogo.|File|A piece of screen kept in another file of the game.
+type.Panel|Painel|Uma área com fundo.|Panel|An area with a background.
+type.Tooltip|Balão de dica|O balão que aparece ao parar o mouse.|Tooltip|The balloon that shows when the mouse rests.
+type.Instance|Modelo|Uma peça pronta, feita de vários elementos.|Template|A ready piece made of several elements.
+# ---- properties of every element ----
+attr.visible|Visível|Se aparece na tela.|Visible|Whether it shows on the screen.
+attr.startVisible|Visível ao abrir|Se já aparece quando a tela abre.|Visible at start|Whether it shows as soon as the screen opens.
+attr.allowDragging|Pode arrastar|Se o jogador pode arrastá-lo com o mouse.|Can be dragged|Whether the player can drag it with the mouse.
+attr.anchor|Âncora|Em que canto ou lado da caixa de fora ele fica preso. Stretch = estica para ocupar tudo.|Anchor|Which corner or side of the box around it it sticks to. Stretch = it fills that box.
+attr.anchorMin|Âncora mínima|Canto de baixo à esquerda, de 0 a 1, em relação à caixa de fora. 0.5 0 = meio embaixo.|Anchor minimum|Lower left corner, from 0 to 1, relative to the box around it. 0.5 0 = middle of the bottom.
+attr.anchorMax|Âncora máxima|Canto de cima à direita, de 0 a 1, em relação à caixa de fora.|Anchor maximum|Upper right corner, from 0 to 1, relative to the box around it.
+attr.colOffset|Pular colunas|Quantas das 12 colunas ficam vazias antes dele (dentro de uma Linha).|Skip columns|How many of the 12 columns stay empty before it (in a Row).
+attr.colSpan|Colunas (de 12)|Quantas das 12 colunas da Linha ele ocupa: 6 = metade, 12 = toda.|Columns (of 12)|How many of the Row's 12 columns it takes: 6 = half, 12 = all.
+attr.colStart|Coluna inicial|Em que coluna da Linha ele começa.|First column|At which column of the Row it starts.
+attr.colPadding|Folga na coluna|Espaço entre ele e as bordas das suas colunas.|Column padding|Space between it and the edges of its columns.
+attr.data|Dado interno|Um texto que o código do jogo lê. Mudar pode atrapalhar o funcionamento.|Internal data|A text the game's code reads. Changing it may break how it works.
+attr.height|Altura|Altura em pontos da interface. Em algumas listas quem manda é a altura preferida.|Height|Height in interface points. In some lists the preferred height decides.
+attr.width|Largura|Largura em pontos da interface. Em algumas listas quem manda é a largura preferida.|Width|Width in interface points. In some lists the preferred width decides.
+attr.errorClass|Estilo de erro|Classe usada quando há um erro (como um valor inválido).|Error style|Class used when there is an error (such as a wrong value).
+attr.hoverClass|Estilo com o mouse em cima|Classe usada enquanto o mouse está sobre ele.|Style under the mouse|Class used while the mouse is over it.
+attr.pressClass|Estilo apertado|Classe usada enquanto é clicado.|Pressed style|Class used while it is being clicked.
+attr.flaggedClass|Estilo marcado|Classe usada quando está marcado.|Flagged style|Class used when it is flagged.
+attr.flagged|Marcado|Se está marcado (muda a aparência se houver estilo marcado).|Flagged|Whether it is flagged (changes the look if there is a flagged style).
+attr.selectClass|Estilo escolhido|Classe usada quando está selecionado.|Selected style|Class used when it is selected.
+attr.interactable|Clicável|Se responde ao mouse. Desligado, fica apagado ou ignora cliques.|Clickable|Whether it answers the mouse. Off, it looks dim or ignores clicks.
+attr.margin|Margem|Espaço por fora, entre ele e os vizinhos ou a borda. Numa Linha, use Folga na coluna.|Margin|Space outside, between it and its neighbors or the edge. In a Row, use Column padding.
+attr.margin-top|Margem de cima|Espaço por fora, em cima.|Top margin|Space outside, at the top.
+attr.margin-right|Margem direita|Espaço por fora, à direita.|Right margin|Space outside, at the right.
+attr.margin-bottom|Margem de baixo|Espaço por fora, embaixo.|Bottom margin|Space outside, at the bottom.
+attr.margin-left|Margem esquerda|Espaço por fora, à esquerda.|Left margin|Space outside, at the left.
+attr.name|Nome interno|Nome do objeto dentro do jogo. Não aparece na tela.|Internal name|Name of the object inside the game. Not seen on the screen.
+attr.opacity|Opacidade|Transparência dele e de tudo dentro: 1 = normal, 0.5 = meio transparente, 0 = invisível.|Opacity|Transparency of it and all inside: 1 = normal, 0.5 = half transparent, 0 = invisible.
+attr.pivot|Ponto de apoio|O ponto dele que fica na posição: 0 0 = canto de baixo à esquerda, 0.5 0.5 = centro, 1 1 = canto de cima à direita.|Pivot|The point of it that sits at the position: 0 0 = lower left corner, 0.5 0.5 = center, 1 1 = upper right corner.
+attr.position|Posição|Distância da âncora: horizontal e vertical. Positivo = direita e cima. Dentro de listas a lista decide.|Position|Distance from the anchor: horizontal and vertical. Positive = right and up. Inside lists the list decides.
+attr.positionConstraint|Limite da posição|Screen impede que seja arrastado para fora da tela.|Position limit|Screen keeps it from being dragged off the screen.
+attr.rotation|Rotação|Giro em graus.|Rotation|Turn in degrees.
+attr.scale|Escala|Tamanho: 1 1 = normal, 2 2 = dobro.|Scale|Size: 1 1 = normal, 2 2 = double.
+attr.script|Código ligado|O código do jogo que comanda este elemento. Bloqueado por segurança.|Attached code|The game's code that runs this element. Locked for safety.
+attr.tooltip|Dica (descrição)|Texto do balão que aparece quando o mouse para em cima.|Tooltip (description)|Text of the balloon that shows when the mouse rests on it.
+attr.tooltipPosition|Lado da dica|De que lado do elemento o balão aparece.|Tooltip side|On which side of the element the balloon shows.
+attr.tooltipDelay|Espera da dica|Segundos até o balão aparecer.|Tooltip delay|Seconds until the balloon shows.
+attr.tooltipDuration|Duração da dica|Segundos que o balão fica na tela.|Tooltip duration|Seconds the balloon stays.
+attr.distance|Distância da dica|Espaço entre o balão e o elemento.|Tooltip distance|Space between the balloon and the element.
+attr.onClick|Ao clicar (código)|Função do jogo chamada no clique. Bloqueada; use "O que faz".|On click (code)|Game function called by a click. Locked; use "What it does".
+attr.onHoverEnter|Ao entrar o mouse (código)|Função do jogo. Bloqueada por segurança.|On mouse enter (code)|Game function. Locked for safety.
+attr.onHoverExit|Ao sair o mouse (código)|Função do jogo. Bloqueada por segurança.|On mouse leave (code)|Game function. Locked for safety.
+attr.onSelect|Ao selecionar (código)|Função do jogo. Bloqueada por segurança.|On select (code)|Game function. Locked for safety.
+attr.onDeselect|Ao tirar a seleção (código)|Função do jogo. Bloqueada por segurança.|On deselect (code)|Game function. Locked for safety.
+attr.onPointerDown|Ao apertar (código)|Função do jogo. Bloqueada por segurança.|On press (code)|Game function. Locked for safety.
+attr.onPointerUp|Ao soltar (código)|Função do jogo. Bloqueada por segurança.|On release (code)|Game function. Locked for safety.
+attr.safeArea|Área segura|Evita as bordas da tela que podem ficar escondidas (celulares).|Safe area|Stays away from screen edges that may be hidden (phones).
+attr.useLayoutElement|Usar medidas da lista|Liga as medidas mínima, preferida e flexível abaixo.|Use list sizes|Turns on the minimum, preferred and flexible sizes below.
+attr.ignoreLayout|Ignorar a lista|A lista em volta deixa de arrumá-lo: vale a posição dele.|Ignore the list|The list around it no longer arranges it: its own position counts.
+attr.minHeight|Altura mínima|A lista nunca o deixa mais baixo que isso.|Minimum height|The list never makes it lower than this.
+attr.minWidth|Largura mínima|A lista nunca o deixa mais estreito que isso.|Minimum width|The list never makes it narrower than this.
+attr.preferredHeight|Altura preferida|Altura que a lista dá se houver espaço.|Preferred height|Height the list gives it if there is room.
+attr.preferredWidth|Largura preferida|Largura que a lista dá se houver espaço.|Preferred width|Width the list gives it if there is room.
+attr.flexibleWidth|Largura flexível|Parte do espaço que sobra: 1 = pega o que sobra, 0 = não cresce.|Flexible width|Share of the room left: 1 = takes what is left, 0 = does not grow.
+attr.flexibleHeight|Altura flexível|Parte da altura que sobra: 1 = pega o que sobra, 0 = não cresce.|Flexible height|Share of the height left: 1 = takes what is left, 0 = does not grow.
+attr.layoutPriority|Prioridade na lista|Quando duas regras de tamanho brigam, vale a de número maior.|List priority|When two size rules disagree, the higher number counts.
+attr.showAnimation|Animação ao aparecer|Movimento usado quando ele aparece.|Show animation|Movement used when it shows.
+attr.hideAnimation|Animação ao sumir|Movimento usado quando ele some.|Hide animation|Movement used when it goes away.
+attr.border|Cor da borda|Cor do contorno.|Border color|Color of the outline.
+attr.borderSprite|Figura da borda|Desenho usado no contorno.|Border picture|Picture used for the outline.
+attr.borderSpriteType|Tipo da borda|Como o desenho da borda se estica.|Border type|How the border's picture stretches.
+attr.borderPadding|Folga da borda|Espaço entre o contorno e o elemento.|Border padding|Space between the outline and the element.
+attr.sound|Som|Som tocado pelo código do jogo.|Sound|Sound played by the game's code.
+attr.clickSound|Som do clique|Som ao clicar.|Click sound|Sound when clicked.
+attr.hideSound|Som ao sumir|Som quando some.|Hide sound|Sound when it goes away.
+attr.showSound|Som ao aparecer|Som quando aparece.|Show sound|Sound when it shows.
+attr.hoverSound|Som ao passar o mouse|Som quando o mouse entra.|Hover sound|Sound when the mouse enters.
+attr.hoverExitSound|Som ao sair o mouse|Som quando o mouse sai.|Leave sound|Sound when the mouse leaves.
+attr.pressSound|Som ao apertar|Som quando o botão do mouse desce.|Press sound|Sound when the mouse button goes down.
+attr.releaseSound|Som ao soltar|Som quando o botão do mouse sobe.|Release sound|Sound when the mouse button goes up.
+attr.valueChangedSound|Som ao mudar|Som quando o valor muda.|Change sound|Sound when the value changes.
+# ---- texts ----
+attr.text|Texto|O que está escrito.|Text|What it says.
+attr.richText|Texto formatado|Texto com marcas do jogo para cor e tamanho, como [b]negrito[/b]. Para texto comum use Texto.|Formatted text|Text with the game's marks for color and size, such as [b]bold[/b]. For plain text use Text.
+attr.alignment|Alinhamento|Para que lado o texto encosta.|Alignment|Which side the text leans to.
+attr.autoSize|Tamanho automático|A letra diminui para caber, entre o tamanho mínimo e o máximo.|Automatic size|The letters shrink to fit, between the minimum and the maximum size.
+attr.allowLinks|Aceitar links|Se trechos marcados como link podem ser clicados.|Allow links|Whether parts marked as links can be clicked.
+attr.characterLimit|Limite de letras|Máximo de letras mostradas. Negativo = sem limite.|Letter limit|Most letters shown. Negative = no limit.
+attr.font|Fonte|Caminho da fonte do jogo. Uma @Constante como @FontContrailOne também serve.|Font|Path of a game font. A @Constant such as @FontContrailOne works too.
+attr.fontMaterial|Material da fonte|Efeito da fonte (sombra, contorno).|Font material|Effect of the font (shadow, outline).
+attr.fontSize|Tamanho da letra|Tamanho da letra. Os textos comuns do jogo usam perto de 20.|Font size|Size of the letters. Common texts of the game use about 20.
+attr.fontSizeMin|Letra mínima|Menor tamanho no tamanho automático.|Smallest font size|Smallest size in automatic size.
+attr.fontSizeMax|Letra máxima|Maior tamanho no tamanho automático.|Largest font size|Largest size in automatic size.
+attr.fontStyle|Estilo da letra|Negrito (Bold), itálico (Italic), maiúsculas (UpperCase) e outros.|Font style|Bold, Italic, UpperCase and others.
+attr.overflow|Texto que não cabe|O que acontece com o que sobra: Overflow = passa da borda, Ellipsis = termina em três pontos, Truncate = corta.|Text that does not fit|What happens to the rest: Overflow = goes past the edge, Ellipsis = ends in three dots, Truncate = is cut.
+attr.allowRichText|Aceitar formatação|Se as marcas de formatação viram negrito e cor, ou aparecem como texto.|Allow formatting|Whether formatting marks become bold and color, or show as text.
+attr.wordWrapping|Quebrar linhas|Se o texto continua na linha de baixo quando não cabe.|Wrap lines|Whether the text goes on in the next line when it does not fit.
+attr.padding|Espaço interno|Espaço entre a borda e o que está dentro.|Padding|Space between the edge and what is inside.
+attr.padding-top|Espaço interno em cima|Espaço por dentro, em cima.|Top padding|Space inside, at the top.
+attr.padding-right|Espaço interno à direita|Espaço por dentro, à direita.|Right padding|Space inside, at the right.
+attr.padding-bottom|Espaço interno embaixo|Espaço por dentro, embaixo.|Bottom padding|Space inside, at the bottom.
+attr.padding-left|Espaço interno à esquerda|Espaço por dentro, à esquerda.|Left padding|Space inside, at the left.
+# ---- pictures and buttons ----
+attr.color|Cor|Cor do elemento. Numa imagem, a cor tinge a figura: branco = cores originais.|Color|Color of the element. On a picture it tints it: white = original colors.
+attr.sprite|Imagem|Caminho de uma figura do jogo (ex.: Sprites/Common/IconCheckmark).|Image|Path of one of the game's pictures (e.g. Sprites/Common/IconCheckmark).
+attr.texture|Textura|Caminho da figura mostrada.|Texture|Path of the picture shown.
+attr.ppuMultiplier|Finura das bordas|Quanto maior o número, menores ficam os cantos arredondados.|Edge fineness|The higher the number, the smaller the rounded corners get.
+attr.ppuTarget|Ajuste das bordas|Ajusta os cantos pela largura ou pela altura.|Edge fit|Fits the corners to the width or to the height.
+attr.mask|Recorte|Corta o que está dentro pelo formato da figura.|Mask|Cuts what is inside by the picture's shape.
+attr.preserveAspect|Manter proporção|Não deixa a figura esticar torta.|Keep proportions|Keeps the picture from stretching out of shape.
+attr.raycastTarget|Recebe o mouse|Se o mouse "bate" nele. Desligado, o clique passa para o que está atrás.|Takes the mouse|Whether the mouse hits it. Off, the click goes to what is behind.
+attr.raycastPadding|Área do clique|Aumenta (negativo) ou diminui (positivo) a área que recebe o mouse.|Click area|Grows (negative) or shrinks (positive) the area that takes the mouse.
+attr.type|Como a figura estica|Simple = estica toda, Sliced = mantém os cantos, Tiled = repete, Filled = enche aos poucos.|How the picture stretches|Simple = all of it, Sliced = keeps the corners, Tiled = repeats, Filled = fills up gradually.
+attr.fillAmount|Quanto está cheia|De 0 (vazia) a 1 (cheia), no tipo Filled.|How full|From 0 (empty) to 1 (full), in the Filled type.
+attr.fillMethod|Sentido do enchimento|Para que lado enche: horizontal, vertical ou em volta.|Fill direction|Which way it fills: horizontal, vertical or around.
+attr.fillOrigin|Início do enchimento|De que lado começa a encher (0, 1, 2 ou 3).|Fill start|From which side it starts to fill (0, 1, 2 or 3).
+attr.fillCenter|Preencher o meio|Desligado, só as bordas da figura aparecem.|Fill the middle|Off, only the picture's edges show.
+attr.setNativeSize|Tamanho original|Deixa do tamanho da própria figura.|Original size|Makes it the size of the picture itself.
+attr.uvRectMin|Recorte inicial|Que parte da figura aparece: canto de baixo à esquerda, de 0 a 1.|Crop start|Which part of the picture shows: lower left corner, from 0 to 1.
+attr.uvRectMax|Recorte final|Que parte da figura aparece: canto de cima à direita, de 0 a 1.|Crop end|Which part of the picture shows: upper right corner, from 0 to 1.
+attr.colors|Cores por estado|Cores para normal, mouse em cima, apertado, escolhido e desativado.|Colors by state|Colors for normal, under the mouse, pressed, selected and disabled.
+attr.navigation|Navegação por teclado|Se as setas do teclado ou controle passam por ele.|Keyboard navigation|Whether the keyboard arrows or a gamepad can reach it.
+# ---- lists ----
+attr.spacing|Espaçamento|Espaço entre um item e outro.|Spacing|Space between one item and the next.
+attr.childAlignment|Alinhar itens|Para que lado os itens encostam.|Align items|Which side the items lean to.
+attr.childForceExpandWidth|Esticar larguras|Os itens dividem toda a largura.|Stretch widths|The items share the whole width.
+attr.childForceExpandHeight|Esticar alturas|Os itens dividem toda a altura.|Stretch heights|The items share the whole height.
+attr.childControlWidth|Mandar na largura|A lista decide a largura dos itens.|Control width|The list decides the items' width.
+attr.childControlHeight|Mandar na altura|A lista decide a altura dos itens.|Control height|The list decides the items' height.
+attr.childScaleWidth|Contar escala na largura|Considera a Escala dos itens ao medir a largura.|Count scale in width|Takes the items' Scale into account for the width.
+attr.childScaleHeight|Contar escala na altura|Considera a Escala dos itens ao medir a altura.|Count scale in height|Takes the items' Scale into account for the height.
+attr.itemTemplate|Modelo dos itens|Modelo usado pelo código do jogo para criar cada item.|Item template|Template the game's code uses to make each item.
+attr.items|Fonte dos itens|De onde o código do jogo tira os itens. Melhor não mudar.|Source of items|Where the game's code takes the items from. Better left alone.
+attr.sizeFitter|Ajustar ao conteúdo|A caixa cresce com o que tem dentro: na altura (Vertical), na largura (Horizontal) ou nas duas.|Fit to content|The box grows with what is inside: in height (Vertical), width (Horizontal) or both.
+attr.maxWidth|Largura máxima|Não cresce além disso.|Maximum width|Does not grow past this.
+attr.maxHeight|Altura máxima|Não cresce além disso.|Maximum height|Does not grow past this.
+attr.maxHeightPercent|Altura máxima (%)|Porcentagem da altura da tela que pode ocupar.|Maximum height (%)|Percentage of the screen's height it may take.
+attr.cellSize|Tamanho da célula|Largura e altura de cada item da grade.|Cell size|Width and height of each item of the grid.
+attr.constraint|Regra da grade|Fixar o número de colunas, de linhas, ou deixar livre.|Grid rule|Fix the number of columns, of rows, or leave it free.
+attr.constraintCount|Número fixo|Quantas colunas ou linhas, conforme a regra da grade.|Fixed number|How many columns or rows, by the grid rule.
+attr.startCorner|Canto inicial|Em que canto fica o primeiro item.|First corner|In which corner the first item is.
+attr.startAxis|Direção inicial|Se enche primeiro a linha ou a coluna.|First direction|Whether it fills the row or the column first.
+attr.numColumns|Número de colunas|Em quantas colunas a Linha é dividida (normalmente 12).|Number of columns|In how many columns the Row is divided (normally 12).
+attr.verticalScrollbarVisibility|Barra de rolagem vertical|Quando a barra da direita aparece.|Vertical scroll bar|When the bar on the right shows.
+attr.horizontalScrollbarVisibility|Barra de rolagem horizontal|Quando a barra de baixo aparece.|Horizontal scroll bar|When the bar at the bottom shows.
+attr.fitContentHeight|Altura do conteúdo|A área fica da altura do conteúdo, se couber.|Content height|The area is as high as its content, if it fits.
+# ---- sliders, toggles, text boxes, bars ----
+attr.backgroundColor|Cor do fundo|Cor da parte de trás.|Background color|Color of the back.
+attr.fillColor|Cor do preenchimento|Cor da parte cheia da barra.|Fill color|Color of the filled part of the bar.
+attr.fillSprite|Figura do preenchimento|Desenho da parte cheia da barra.|Fill picture|Picture of the filled part of the bar.
+attr.handleColor|Cor do pegador|Cor da peça que se arrasta.|Handle color|Color of the piece that is dragged.
+attr.handleSprite|Figura do pegador|Desenho da peça que se arrasta.|Handle picture|Picture of the piece that is dragged.
+attr.lowHandleSprite|Figura do pegador mínimo|Desenho do pegador do valor menor.|Lower handle picture|Picture of the lower value's handle.
+attr.highHandleSprite|Figura do pegador máximo|Desenho do pegador do valor maior.|Upper handle picture|Picture of the upper value's handle.
+attr.handleScale|Tamanho do pegador|Escala da peça que se arrasta (1 1 = normal).|Handle size|Scale of the piece that is dragged (1 1 = normal).
+attr.handleRaycastPadding|Área de clique do pegador|Aumenta (negativo) ou diminui a área que se pode pegar.|Handle click area|Grows (negative) or shrinks the area that can be grabbed.
+attr.minValue|Valor mínimo|Menor número da barra.|Minimum value|Lowest number of the bar.
+attr.maxValue|Valor máximo|Maior número da barra.|Maximum value|Highest number of the bar.
+attr.minRange|Intervalo mínimo|Menor distância entre os dois pegadores.|Smallest range|Smallest distance between the two handles.
+attr.maxRange|Intervalo máximo|Maior distância entre os dois pegadores.|Largest range|Largest distance between the two handles.
+attr.lowValue|Valor de baixo|Onde está o pegador menor.|Lower value|Where the lower handle is.
+attr.highValue|Valor de cima|Onde está o pegador maior.|Upper value|Where the upper handle is.
+attr.numberOfSteps|Número de passos|Em quantas posições a barra para. 0 = livre.|Number of steps|At how many positions the bar stops. 0 = free.
+attr.isOn|Ligado|Se a chave está ligada. O jogo ou o mod costuma decidir.|On|Whether the switch is on. The game or mod usually decides.
+attr.onClass|Estilo ligado|Classe usada quando está ligado.|On style|Class used when it is on.
+attr.checkColor|Cor da marca|Cor do sinal de ligado.|Check color|Color of the on mark.
+attr.allowDragEventToBubble|Passar o arrasto adiante|Se arrastar sobre o campo também rola a lista em volta.|Pass dragging on|Whether dragging on the box also scrolls the list around it.
+attr.placeholderText|Texto de exemplo|Texto apagado mostrado enquanto o campo está vazio.|Placeholder text|Dim text shown while the box is empty.
+attr.textColor|Cor do texto|Cor do que é digitado.|Text color|Color of what is typed.
+attr.placeholderColor|Cor do exemplo|Cor do texto de exemplo.|Placeholder color|Color of the placeholder text.
+attr.lineType|Linhas|Se o campo aceita uma linha ou várias.|Lines|Whether the box takes one line or several.
+attr.contentType|O que aceita|Que tipo de texto pode ser digitado: qualquer um, só números, senha...|What it takes|What kind of text can be typed: any, only numbers, password...
+attr.validationRegex|Regra de validação|Regra (expressão regular) do que pode ser digitado. Para quem programa.|Validation rule|Rule (regular expression) for what can be typed. For programmers.
+attr.enableSubLayout|Arrumar por dentro|O campo arruma itens extras dentro dele, como a unidade ao lado do número.|Arrange inside|The box arranges extra items inside it, such as the unit beside a number.
+# ---- sounds, layers, files ----
+attr.clip|Arquivo de som|Que som toca.|Sound file|Which sound plays.
+attr.loop|Repetir|Se o som recomeça quando acaba.|Loop|Whether the sound starts again at its end.
+attr.mute|Mudo|Cala o som.|Mute|Silences the sound.
+attr.play|Tocar|Começa ou para o som.|Play|Starts or stops the sound.
+attr.playOnAwake|Tocar ao abrir|Se toca assim que a tela abre.|Play at start|Whether it plays as soon as the screen opens.
+attr.pitch|Tom|Mais grave (menos de 1) ou mais agudo (mais de 1).|Pitch|Lower (below 1) or higher (above 1).
+attr.volume|Volume|De 0 (mudo) a 1.|Volume|From 0 (mute) to 1.
+attr.sortOrder|Ordem da camada|Camadas com número maior ficam na frente.|Layer order|Layers with a higher number are in front.
+attr.autoRefresh|Recarregar sozinho|Lê o arquivo de novo quando ele muda.|Reload by itself|Reads the file again when it changes.
+attr.path|Arquivo|Que arquivo do jogo é mostrado aqui.|File|Which game file is shown here.
+attr.inline|No lugar|Se o conteúdo do arquivo entra direto neste lugar.|In place|Whether the file's content goes right here.
+# ---- templates (ready pieces) ----
+tmpl.tooltip|Balão de dica|O balão de ajuda do jogo.|Tooltip|The game's help balloon.
+tmpl.flyout|Menu lateral|Um menu que desliza da borda da tela. O jogo é quem costuma abri-lo.|Side menu|A menu that slides in from the edge of the screen. The game usually opens it.
+tmpl.dialog|Janela|A moldura das janelas do jogo. Para uma janela sua, use Painéis.|Window|The frame of the game's windows. For a window of your own, use Panels.
+tmpl.list-item|Item de lista|Uma linha clicável de uma lista.|List item|A clickable line of a list.
+tmpl.craft-list-item|Nave na lista|Uma linha da lista de naves.|Craft in the list|A line of the craft list.
+tmpl.list-item-rename-ui|Renomear item|O campo que aparece ao renomear um item da lista.|Rename item|The box shown when renaming a list item.
+tmpl.dropdown|Lista suspensa|A lista que abre ao clicar numa opção. Precisa do código do jogo.|Drop-down|The list that opens when an option is clicked. Needs the game's code.
+tmpl.dropdown-item|Item da lista suspensa|Uma opção da lista suspensa.|Drop-down item|An option of a drop-down.
+tmpl.autocomplete|Sugestões|A lista de sugestões ao digitar. Precisa do código do jogo.|Suggestions|The list of suggestions while typing. Needs the game's code.
+tmpl.autocomplete-item|Sugestão|Uma linha da lista de sugestões.|Suggestion|A line of the list of suggestions.
+tmpl.control-header|Seção|Faixa com título que esconde ou mostra o que vem depois.|Section|Band with a title that hides or shows what follows.
+tmpl.control-spacer|Espaço|Um vão entre itens.|Spacer|A gap between items.
+tmpl.control-slider|Controle deslizante|Barra com nome e valor. Ligue a algo em "O que faz".|Slider|Bar with a name and value. Tie it to something under "What it does".
+tmpl.control-range-slider|Controle de intervalo|Barra com dois pegadores. Precisa de código.|Range slider|Bar with two handles. Needs code.
+tmpl.control-slider-text|Controle com caixa|Barra com uma caixa onde se digita o número. Ligue a algo em "O que faz".|Slider with a box|Bar with a box to type the number. Tie it to something under "What it does".
+tmpl.control-button|Botão|Botão do tamanho usado nos painéis do jogo.|Button|Button of the size used in the game's panels.
+tmpl.control-button-label|Botão com nome|Um nome à esquerda e um botão à direita.|Button with a name|A name on the left and a button on the right.
+tmpl.control-spinner-button-no-label|Setas sem nome|Um valor entre duas setas, sem nome. Precisa de código.|Arrows without name|A value between two arrows, without a name. Needs code.
+tmpl.control-spinner-button|Setas|Um valor entre duas setas. Precisa de código.|Arrows|A value between two arrows. Needs code.
+tmpl.control-spinner-button-with-extra-button|Setas com botão|Setas e mais um botão. Precisa de código.|Arrows with a button|Arrows and one more button. Needs code.
+tmpl.control-spinner-button-dual-label|Setas com dois nomes|Setas com dois textos. Precisa de código.|Arrows with two names|Arrows with two texts. Needs code.
+tmpl.control-spinner|Setas|Um valor que muda por setas. Precisa de código.|Arrows|A value changed by arrows. Needs code.
+tmpl.control-spinner-input|Setas com campo|Setas e um campo para digitar. Precisa de código.|Arrows with a box|Arrows and a box to type in. Needs code.
+tmpl.control-spinner-input-label|Campo com nome|Nome e campo para digitar, com setas. Precisa de código.|Box with a name|Name and a box to type in, with arrows. Needs code.
+tmpl.control-spinner-input-dual-label|Campo com dois nomes|Campo com setas e dois textos. Precisa de código.|Box with two names|Box with arrows and two texts. Needs code.
+tmpl.control-spinner-input-toggle|Campo com chave|Campo com setas e uma chave. Precisa de código.|Box with a switch|Box with arrows and a switch. Needs code.
+tmpl.control-vector-input|Vários números|Campos lado a lado (como X, Y, Z). Precisa de código.|Several numbers|Boxes side by side (such as X, Y, Z). Needs code.
+tmpl.control-vector-input-label|Vários números com nome|Nome e campos lado a lado. Precisa de código.|Several numbers with a name|Name and boxes side by side. Needs code.
+tmpl.control-vector-input-inline-label|Vários números, nome junto|Campos com o nome na mesma linha. Precisa de código.|Several numbers, name in line|Boxes with the name in the same line. Needs code.
+tmpl.control-text-input-label|Campo de texto|Nome e campo para escrever. Precisa de código.|Text box|Name and a box to write in. Needs code.
+tmpl.control-text|Linha com valor|Nome à esquerda e valor à direita.|Line with a value|Name on the left and value on the right.
+tmpl.control-toggle|Liga/desliga|Chave sim/não com nome. Ligue a algo em "O que faz".|Toggle|Yes/no switch with a name. Tie it to something under "What it does".
+tmpl.control-color-button|Botão de cor|Botão que abre a escolha de cor. Precisa de código.|Color button|Button that opens the color picker. Needs code.
+tmpl.control-dropdown|Opção com lista|Nome e lista suspensa. Precisa de código.|Option with a list|Name and drop-down. Needs code.
+tmpl.playtest|Aviso de teste|O aviso de versão de teste do jogo.|Playtest notice|The game's test version notice.
+tmpl.status-message|Mensagem de estado|A mensagem curta que aparece no alto da tela.|Status message|The short message at the top of the screen.
+tmpl.input-slider|Controle de comando|A barra de um comando da nave (trim, VTOL).|Control bar|The bar of a craft's control (trim, VTOL).
+tmpl.analog-stick|Alavanca|O direcional na tela, de telas de toque.|Analog stick|The on-screen stick, for touch screens.
+tmpl.weapon|Arma|Uma linha da lista de armas.|Weapon|A line of the weapons list.
+tmpl.target-box|Caixa de alvo|A moldura em volta de um alvo.|Target box|The frame around a target.
+tmpl.target-box-laser|Alvo de laser|A marca de um alvo de laser.|Laser target|The mark of a laser target.
+tmpl.radio-message|Mensagem de rádio|Uma mensagem de rádio das atividades.|Radio message|A radio message of the activities.
+tmpl.chat-message|Mensagem de conversa|Uma linha da conversa entre jogadores.|Chat message|A line of the chat between players.
+tmpl.player-row|Jogador|Uma linha da lista de jogadores.|Player|A line of the list of players.
+tmpl.aircraft-row|Nave|Uma linha de uma lista de naves.|Craft|A line of a list of crafts.
+tmpl.part-button|Peça|Um botão da lista de peças do designer.|Part|A button of the designer's parts list.
+tmpl.axis-button|Eixo|Um botão de eixo (X, Y, Z) do designer.|Axis|An axis button (X, Y, Z) of the designer.
+tmpl.category|Categoria|Um grupo com título numa lista.|Category|A group with a title in a list.
+tmpl.setting-row|Opção|Uma linha da tela de opções.|Setting|A line of the settings screen.
+tmpl.settings-group|Grupo de opções|Um grupo da tela de opções.|Settings group|A group of the settings screen.
+tmpl.property-label|Nome de propriedade|Um nome nas propriedades da peça.|Property name|A name in the part properties.
+tmpl.property-label-value|Propriedade|Nome e valor nas propriedades da peça.|Property|Name and value in the part properties.
+tmpl.property-button|Botão de propriedade|Um botão nas propriedades da peça.|Property button|A button in the part properties.
+tmpl.property-color|Cor da peça|Uma cor nas propriedades da peça.|Part color|A color in the part properties.
+tmpl.property-input|Campo de propriedade|Um campo nas propriedades da peça. Precisa de código.|Property box|A box in the part properties. Needs code.
+tmpl.tab-btn|Aba|Um botão de aba.|Tab|A tab button.
+tmpl.variable-row|Variável|Uma linha da lista de variáveis.|Variable|A line of the list of variables.
+tmpl.mfd-button|Botão de visor|Um botão dos visores da cabine.|Display button|A button of the cockpit displays.
+# ---- style classes ----
+class.btn|Botão|A forma comum de todos os botões.|Button|The common shape of all buttons.
+class.btn-default|Botão cinza|Botão comum, cinza.|Gray button|Common gray button.
+class.btn-primary|Botão azul|Botão de destaque, azul.|Blue button|Highlighted blue button.
+class.btn-success|Botão verde|Botão de confirmar, verde.|Green button|Green button for yes.
+class.btn-danger|Botão vermelho|Botão de perigo ou sair, vermelho.|Red button|Red button for danger or leaving.
+class.btn-dark|Botão escuro|Botão escuro.|Dark button|Dark button.
+class.btn-small|Botão pequeno|Letra e tamanho menores.|Small button|Smaller letters and size.
+class.btn-icon|Botão de ícone|Botão quadrado com figura.|Icon button|Square button with a picture.
+class.btn-flight|Botão de voo|Aparência dos mostradores da tela de voo.|Flight button|Look of the flight screen's displays.
+class.btn-hover|Botão com o mouse em cima|Usada pelo jogo enquanto o mouse está em cima.|Button under the mouse|Used by the game while the mouse is over it.
+class.btn-press|Botão apertado|Usada pelo jogo enquanto é clicado.|Pressed button|Used by the game while it is clicked.
+class.btn-select|Botão escolhido|Usada pelo jogo quando está escolhido.|Selected button|Used by the game when it is selected.
+class.btn-no-sound|Botão sem som|Não toca som no clique.|Silent button|No sound when clicked.
+class.btn-big-sound|Botão com som forte|Som maior no clique.|Loud button|Bigger sound when clicked.
+class.btn-huge-sound|Botão com som bem forte|Som ainda maior no clique.|Very loud button|Even bigger sound when clicked.
+class.btn-arrow|Botão de seta|As setas de mudar valor.|Arrow button|The arrows that change a value.
+class.label-text|Texto de nome|Texto cinza usado para nomes.|Name text|Gray text used for names.
+class.value-text|Texto de valor|Texto claro usado para valores.|Value text|Light text used for values.
+class.control-header|Faixa de seção|Aparência da faixa de título.|Section band|Look of the title band.
+class.vertical-layout|Lista vertical|Arruma itens em coluna.|Vertical list|Arranges items in a column.
+class.horizontal-layout|Fileira|Arruma itens lado a lado.|Horizontal list|Arranges items side by side.
+class.grid-layout|Grade|Arruma itens em grade.|Grid|Arranges items in a grid.
+class.dialog|Janela|Aparência das janelas.|Window|Look of the windows.
+class.dialog-wide|Janela larga|Janela mais larga.|Wide window|Wider window.
+class.dialog-header|Título da janela|A faixa de cima da janela.|Window title|The band at the top of a window.
+class.list-item|Item de lista|Uma linha clicável.|List item|A clickable line.
+class.list-item-selected|Item escolhido|A linha escolhida de uma lista.|Selected item|The selected line of a list.
+class.slider-control|Controle deslizante|Aparência do controle deslizante.|Slider|Look of the slider.
+class.input-subtle|Campo discreto|Campo de texto sem destaque.|Subtle box|Text box without highlight.
+class.input-error|Campo com erro|Campo com valor inválido.|Box with an error|Box with a wrong value.
+class.tooltip|Balão de dica|Aparência do balão.|Tooltip|Look of the balloon.
+class.disabled|Desativado|Aparência apagada.|Disabled|Dim look.
+class.safe-area|Área segura|Evita as bordas escondidas da tela.|Safe area|Stays off hidden screen edges.
+class.font-contrail-one|Fonte Contrail One|A fonte inclinada dos mostradores de voo.|Contrail One font|The slanted font of the flight displays.
+class.font-contrail-one-shadow|Fonte Contrail One com sombra|A mesma fonte, com sombra.|Contrail One font with shadow|The same font, with a shadow.
+class.nested-scroll-view-background|Fundo de lista|O fundo escuro de uma lista dentro de um painel.|List background|The dark back of a list inside a panel.
+class.Button|Todo botão|Regras de todos os botões.|Every button|Rules of every button.
+class.Text|Todo texto|Regras de todos os textos.|Every text|Rules of every text.
+class.Image|Toda imagem|Regras de todas as imagens.|Every image|Rules of every image.
+class.Slider|Toda barra|Regras de todas as barras deslizantes.|Every slider|Rules of every slider bar.
+class.Toggle|Toda chave|Regras de todas as chaves.|Every switch|Rules of every switch.
+class.Input|Todo campo|Regras de todos os campos de texto.|Every text box|Rules of every text box.
+# ---- constants ----
+const.ColorPrimary|Cor principal|O azul dos botões e destaques.|Main color|The blue of buttons and highlights.
+const.ColorPrimaryLight|Cor principal clara|Azul mais claro, com o mouse em cima.|Light main color|Lighter blue, under the mouse.
+const.ColorDefault|Cor dos botões comuns|O cinza dos botões comuns.|Common button color|The gray of common buttons.
+const.ColorDefaultDark|Cinza escuro|Cinza mais escuro dos botões.|Dark gray|Darker gray of buttons.
+const.ColorDefaultLight|Cinza claro|Cinza mais claro dos botões.|Light gray|Lighter gray of buttons.
+const.ColorDanger|Cor de perigo|O vermelho de sair e apagar.|Danger color|The red for leaving and deleting.
+const.ColorWarning|Cor de aviso|O amarelo dos avisos.|Warning color|The yellow of warnings.
+const.ColorSuccess|Cor de sucesso|O verde de confirmar.|Success color|The green for yes.
+const.ColorPanelDark|Fundo escuro|Fundo das janelas.|Dark background|Background of windows.
+const.ColorPanel|Fundo dos painéis|Fundo de painéis.|Panel background|Background of panels.
+const.ColorPanelLight|Fundo claro|Fundo mais claro.|Light background|Lighter background.
+const.ColorPanelBorder|Borda das janelas|Contorno das janelas.|Window border|Outline of windows.
+const.ColorSliderBackground|Fundo das barras|Fundo das barras deslizantes.|Bar background|Background of slider bars.
+const.ColorLabelText|Cor dos nomes|Cinza dos textos de nome.|Name color|Gray of the name texts.
+const.ColorValueText|Cor dos valores|Cor clara dos valores.|Value color|Light color of values.
+const.ColorLink|Cor dos links|Azul dos links.|Link color|Blue of links.
+const.ColorTransparent|Transparente|Cor invisível.|Transparent|Invisible color.
+const.ColorBorderSelected|Borda do escolhido|Contorno do item escolhido.|Selected border|Outline of the selected item.
+const.Spacing|Espaço padrão|Espaço comum entre itens.|Standard space|Common space between items.
+const.DoubleSpacing|Espaço duplo|O dobro do espaço padrão.|Double space|Twice the standard space.
+const.HalfSpacing|Meio espaço|Metade do espaço padrão.|Half space|Half of the standard space.
+const.RowHeight|Altura da linha|Altura das linhas dos painéis.|Row height|Height of the panels' rows.
+const.SliderHeight|Altura do controle|Altura dos controles deslizantes.|Slider height|Height of sliders.
+const.Newline|Quebra de linha|O sinal usado para mudar de linha.|New line|The sign used for a new line.
+const.PartNameFormat|Formato do nome da peça|Como o nome e o número da peça são escritos.|Part name format|How a part's name and number are written.
+# ---- methods of the game ----
+meth.ToggleWindSettings|Janela do vento|Abre ou fecha a janela de vento e clima.|Wind window|Opens or closes the wind and weather window.
+meth.DisableHighlight|Tirar destaque|Apaga o destaque mostrado na tela.|Remove highlight|Takes away the highlight on the screen.
+meth.RepositionAndUprightCraft|Endireitar a nave|Põe a nave de pé onde ela está.|Upright the craft|Sets the craft upright where it is.
+meth.RepositionAtSpawn|Voltar ao início|Leva a nave de volta ao ponto de partida.|Back to start|Takes the craft back to where it started.
+meth.SetDemoRestrictedAirspaceWarningVisibility|Aviso de área restrita|Mostra o aviso de área restrita da demonstração.|Restricted area warning|Shows the demo's restricted area warning.
+meth.SetTimeText|Texto da hora|Escreve um texto no lugar da hora.|Time text|Writes a text where the time is.
+meth.ShowActivationPanel|Painel de grupos|Mostra o painel de grupos de ativação.|Activation panel|Shows the activation groups panel.
+meth.ShowInstrumentPanel|Painel de instrumentos|Mostra o painel de instrumentos.|Instrument panel|Shows the instrument panel.
+meth.UnloadUnusedAssets|Liberar memória|Pede ao jogo para liberar memória sem uso.|Free memory|Asks the game to free unused memory.
+meth.HideMainUI|Esconder a tela|Esconde ou mostra a interface do designer.|Hide the screen|Hides or shows the designer's interface.
+meth.InvertConcealedParts|Inverter escondidas|Troca as peças escondidas pelas visíveis.|Invert hidden|Swaps hidden parts with visible ones.
+meth.SetAircraftInformationDisplay|Texto de informação|Escreve um texto na linha de informação da nave.|Information text|Writes a text in the craft's information line.
+meth.SetEditingState|Estado de edição|Liga ou desliga o modo de edição do designer.|Editing state|Switches the designer's editing mode.
+meth.ShowEditPanel|Painel de edição|Mostra ou esconde o painel de edição da peça.|Edit panel|Shows or hides the part's edit panel.
+meth.StartFlight|Ir voar|Sai do designer e começa o voo.|Go fly|Leaves the designer and starts the flight.
+meth.ToggleCenterOfIndicators|Centros|Mostra ou esconde os centros de massa, sustentação e empuxo.|Centers|Shows or hides the centers of mass, lift and thrust.
+meth.TogglePartProperties|Propriedades da peça|Abre ou fecha as propriedades da peça.|Part properties|Opens or closes the part properties.
+meth.UpdateDesignerViewButtons|Atualizar botões de vista|Redesenha os botões de vista.|Refresh view buttons|Draws the view buttons again.
+meth.UpdateOrthographicButton|Atualizar vista plana|Redesenha o botão da vista plana.|Refresh flat view|Draws the flat view button again.
+meth.UpdateOverloadButton|Atualizar botão Overload|Redesenha o botão Overload.|Refresh Overload button|Draws the Overload button again.
+meth.UpdatePartSymmetryButtons|Atualizar simetria|Redesenha os botões de simetria.|Refresh symmetry|Draws the symmetry buttons again.
+meth.UpdateWeldButton|Atualizar solda|Redesenha o botão de soldar.|Refresh weld|Draws the weld button again.
+meth.CreateUndoStep|Marcar para desfazer|Cria um ponto de desfazer com uma descrição.|Undo point|Makes an undo point with a description.
+meth.CreateUndoStepForSelectedPart|Marcar a peça para desfazer|Cria um ponto de desfazer da peça escolhida.|Undo point of the part|Makes an undo point of the selected part.
+meth.DeselectPart|Soltar a peça|Tira a seleção da peça.|Deselect part|Takes the selection off the part.
+meth.HideDraggingPartButtons|Esconder botões de arrasto|Esconde os botões que aparecem ao arrastar uma peça.|Hide drag buttons|Hides the buttons shown while dragging a part.
+meth.ShowDraggingPartButtons|Mostrar botões de arrasto|Mostra os botões de arrastar peça.|Show drag buttons|Shows the part dragging buttons.
+meth.ReconnectSelectedPart|Religar a peça|Conecta de novo a peça escolhida.|Reconnect part|Connects the selected part again.
+meth.SetAircraftStructureChanged|Avisar mudança|Avisa o jogo que a nave mudou.|Report a change|Tells the game the craft changed.
+meth.UpdateSymmetryConfig|Atualizar simetria|Refaz os ajustes de simetria.|Refresh symmetry|Makes the symmetry settings again.
+# ---- verbs, for a description made from a method's name ----
+verb.toggle|Liga/desliga ou abre/fecha|.|Toggles|.
+verb.show|Mostra|.|Shows|.
+verb.hide|Esconde|.|Hides|.
+verb.open|Abre|.|Opens|.
+verb.close|Fecha|.|Closes|.
+verb.set|Define|.|Sets|.
+verb.update|Atualiza|.|Refreshes|.
+verb.refresh|Atualiza|.|Refreshes|.
+verb.enable|Ativa|.|Enables|.
+verb.disable|Desativa|.|Disables|.
+verb.select|Seleciona|.|Selects|.
+verb.add|Adiciona|.|Adds|.
+verb.remove|Remove|.|Removes|.
+verb.create|Cria|.|Makes|.
+verb.start|Começa|.|Starts|.
+verb.stop|Para|.|Stops|.
+verb.play|Toca|.|Plays|.
+verb.move|Move|.|Moves|.
+# ---- options of lists ----
+opt.TopLeft|em cima à esquerda||top left|
+opt.TopCenter|em cima no meio||top center|
+opt.TopRight|em cima à direita||top right|
+opt.MiddleLeft|no meio à esquerda||middle left|
+opt.MiddleCenter|no centro||center|
+opt.MiddleRight|no meio à direita||middle right|
+opt.BottomLeft|embaixo à esquerda||bottom left|
+opt.BottomCenter|embaixo no meio||bottom center|
+opt.BottomRight|embaixo à direita||bottom right|
+opt.UpperLeft|em cima à esquerda||top left|
+opt.UpperCenter|em cima no meio||top center|
+opt.UpperRight|em cima à direita||top right|
+opt.LowerLeft|embaixo à esquerda||bottom left|
+opt.LowerCenter|embaixo no meio||bottom center|
+opt.LowerRight|embaixo à direita||bottom right|
+opt.StretchLeft|coluna à esquerda||left column|
+opt.StretchCenter|coluna no meio||middle column|
+opt.StretchRight|coluna à direita||right column|
+opt.TopStretch|faixa em cima||top band|
+opt.MiddleStretch|faixa no meio||middle band|
+opt.BottomStretch|faixa embaixo||bottom band|
+opt.Stretch|ocupa tudo||fills all|
+opt.Left|esquerda||left|
+opt.Right|direita||right|
+opt.Center|centro||center|
+opt.Justified|dos dois lados||both sides|
+opt.Above|acima||above|
+opt.Below|abaixo||below|
+opt.None|nenhum||none|
+opt.Screen|na tela||screen|
+opt.Normal|normal||normal|
+opt.Bold|negrito||bold|
+opt.Italic|itálico||italic|
+opt.Underline|sublinhado||underlined|
+opt.LowerCase|minúsculas||lower case|
+opt.UpperCase|maiúsculas||upper case|
+opt.Simple|estica toda||stretches all|
+opt.Sliced|mantém os cantos||keeps corners|
+opt.Tiled|repete||repeats|
+opt.Filled|enche aos poucos||fills up|
+opt.Horizontal|horizontal||horizontal|
+opt.Vertical|vertical||vertical|
+opt.Both|os dois||both|
+opt.Permanent|sempre||always|
+opt.AutoHide|só se precisar||only if needed|
+opt.AutoHideAndExpandViewport|só se precisar, sem tomar espaço||only if needed, taking no room|
+opt.Overflow|passa da borda||goes past the edge|
+opt.Ellipsis|termina em ...||ends in ...|
+opt.Truncate|corta||is cut|
+opt.Flexible|livre||free|
+opt.FixedColumnCount|colunas fixas||fixed columns|
+opt.FixedRowCount|linhas fixas||fixed rows|
+opt.Standard|qualquer texto||any text|
+opt.IntegerNumber|número inteiro||whole number|
+opt.DecimalNumber|número||number|
+opt.SingleLine|uma linha||one line|
+opt.MultiLineNewline|várias linhas||several lines|

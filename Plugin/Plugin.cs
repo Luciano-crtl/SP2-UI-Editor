@@ -10,7 +10,7 @@ namespace SP2UIEditor
     [BepInPlugin("com.sp2uieditor", "SP2 UI Editor", Version)]
     public sealed class EditorPlugin : BaseUnityPlugin
     {
-        public const string Version = "0.6.0";
+        public const string Version = "0.6.1";
         internal static ManualLogSource Log;
         internal static EditorPlugin Instance;
 

@@ -45,3 +45,5 @@ Fase 5: estilos e constantes compartilhados (`Plugin/Styles.cs`), métodos do jo
 Fase 6: `python make-dist.py <pasta do jogo>` gera `dist/SP2-UI-Editor-<versão>.zip` (plugin, editor e conector em um arquivo cada, guias `GUIA.md`/`GUIDE.md`). O servidor vem desligado: o jogo pergunta quando o programa do editor abre (`Plugin/Player.cs`); Ctrl+Shift+U abre a lista de pacotes (testada no jogo pelo usuário). A pergunta de conexão apareceu no jogo (teste do usuário).
 
 Licença: MIT (`LICENSE`).
+
+Descrições: `Plugin/help.txt` (`chave|nome pt|descrição pt|nome en|descrição en`) vai embutido no plugin e aparece nos (!) da janela; `Tests` confere as linhas e que cada (!) tem texto. Palavras que um método não pode ter (`Core/Calls.cs`) agora incluem os de ciclo de vida do Unity e os que descartam a nave.

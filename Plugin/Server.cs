@@ -53,6 +53,8 @@ namespace SP2UIEditor
             key = BitConverter.ToString(random).Replace("-", "").ToLowerInvariant();
             using (Stream s = typeof(Server).Assembly.GetManifestResourceStream("page.html"))
             using (StreamReader reader = new StreamReader(s, Encoding.UTF8)) page = reader.ReadToEnd();
+            using (Stream s = typeof(Server).Assembly.GetManifestResourceStream("help.txt"))
+            using (StreamReader reader = new StreamReader(s, Encoding.UTF8)) page = page.Replace("/*HELP*/", reader.ReadToEnd().Replace("\\", "\\\\").Replace("`", "'").Replace("${", "$ {"));
 
             // Several ports: after a reload (F6) the old copy still holds its own for a moment.
             Exception last = null;

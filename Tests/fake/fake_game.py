@@ -90,7 +90,7 @@ class H(BaseHTTPRequestHandler):
     def log_message(self, *a): pass
     def send(self, code, kind, data):
         self.send_response(code); self.send_header('Content-Type', kind); self.send_header('Content-Length', str(len(data))); self.end_headers(); self.wfile.write(data)
-    def do_GET(self): self.send(200, 'text/html; charset=utf-8', open(os.path.join(here, '..', '..', 'Plugin', 'page.html'), 'rb').read())
+    def do_GET(self): self.send(200, 'text/html; charset=utf-8', open(os.path.join(here, '..', '..', 'Plugin', 'page.html'), encoding='utf8').read().replace('/*HELP*/', open(os.path.join(here, '..', '..', 'Plugin', 'help.txt'), encoding='utf8').read()).encode())
     def do_POST(self):
         body = self.rfile.read(int(self.headers['Content-Length'] or 0))
         if self.headers.get('X-SP2UI-Key') != KEY: return self.send(401, 'application/json', b'{"error":"wrong key"}')
