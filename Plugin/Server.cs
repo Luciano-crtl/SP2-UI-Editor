@@ -390,11 +390,7 @@ namespace SP2UIEditor
             Action<string, Widget> add = (name, w) => { if (w != null) list.Add(new JObject { ["name"] = name, ["h"] = Tree.Handle(w) }); };
             foreach (Op p in Panels.Defs()) add("panel:" + p.Name, Panels.Content(p.Uid));
             foreach (var menu in UnityEngine.Object.FindObjectsByType<Assets.Scripts.Flight.UI.Panels.MenuPanelScript>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-                if (menu.Widget != null)
-                {
-                    Widget button = menu.Widget.FindWidget("build-button");
-                    add("flightMenu", button != null ? button.Parent : menu.Widget);
-                }
+                add("flightMenu", menu.Widget);
             foreach (Widget root in Tree.Roots())
             {
                 Widget design = root.FindWidget("button-ghost-view"), flight = root.FindWidget("fire-panel"), part = root.FindWidget("items-parent");

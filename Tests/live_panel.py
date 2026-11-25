@@ -69,7 +69,7 @@ try:
     print('     line shows', [k.get('text') for k in tree.get('kids', [])], 'setting is', number and number['value'])
     place = next((p for p in places if p['name'] in ('flightMenu', 'designerBar')), None)
     if place:
-        r = api('add', parent=place['h'], index=0, xml='<Button class="btn btn-primary" width="150" height="50" minHeight="40"><Text text="Meu painel"/></Button>')
+        r = api('add', parent=place['h'], index=-1, xml='<Button class="btn btn-primary" width="150" height="40" minHeight="40"><Text text="Meu painel"/></Button>')
         check('ok' in r and 'ok' in api('action', h=r['h'], kind='panel', args=dict(panel=uid)), 'a button outside opens it')
     shot('panel_open')
     api('panel_close', uid=uid)
