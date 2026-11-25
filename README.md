@@ -32,6 +32,6 @@ Descarregar o plugin (F6) desfaz as mudanças.
 
 ## Estado
 
-Testado: núcleo nos 79 XML do jogo, página e conector com o servidor falso. **Não testado no jogo**: todo o plugin.
+Testado: núcleo nos 79 XML do jogo, página e conector com o servidor falso. Testado no jogo (Designer, `Tests/live_test.py`): seleção, busca, captura, editar, esconder, mover, adicionar, remover, desfazer e refazer. **Falta**: voo, menu principal, F6 com mudanças feitas, recusa de valores inválidos (só fora do jogo).
 Limites: uma tela montada antes de o plugin carregar não mostra o arquivo de origem (reabra a tela). A página consulta o jogo a cada 0,7 s em vez de usar *long-poll*.
 Classes e itens removidos podem não voltar exatamente ao desfazer (a lista de mudanças avisa).

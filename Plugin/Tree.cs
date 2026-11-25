@@ -247,7 +247,7 @@ namespace SP2UIEditor
         }
 
         // bool, color, colorblock, enum, float, int, rectoffset, sound, string, vector2, animation
-        private static string Kind(Attribute a)
+        public static string Kind(Attribute a)
         {
             string n = a.GetType().Name;
             int tick = n.IndexOf('`');

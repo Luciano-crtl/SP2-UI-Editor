@@ -67,6 +67,21 @@ internal static class Program
             Check(SafeXml.Problem(XElement.Parse(bad)) != null, bad + " was accepted");
         Check(SafeXml.AttributeAllowed("opacity") && SafeXml.AttributeAllowed("on") && !SafeXml.AttributeAllowed("onSelect") && !SafeXml.AttributeAllowed("Script"), "attribute names");
 
+        foreach (string good in new[] { "color #e8503a", "color #e8503aff", "color None", "color White:Linear 0.2", "float 1.5", "float -3", "float 1.025:OutBack 0.5", "int 12",
+                                        "bool true", "bool False", "vector2 0.5 1", "vector2 -15 95", "rectoffset 10", "rectoffset 0 5 0 0", "string anything", "enum X" })
+            Check(Values.Problem(good.Split(' ')[0], good.Substring(good.IndexOf(' ') + 1)) == null, "value " + good);
+        foreach (string bad in new[] { "color banana", "color #12", "color #gg0000", "float abc", "float 1,5x", "float NaN", "int 1.5", "bool maybe", "vector2 a b", "rectoffset 1 2 3", "float @Nope" })
+            Check(Values.Problem(bad.Split(' ')[0], bad.Substring(bad.IndexOf(' ') + 1)) != null, "value " + bad + " was accepted");
+
+        // every value the game's own layouts use must be accepted
+        string[] floats = { "width", "height", "fontSize", "opacity" }, offsets = { "margin" }, colors = { "color" };
+        foreach (XAttribute a in layouts.SelectMany(x => x.Descendants()).Attributes())
+        {
+            if (a.Value.Length == 0 || a.Value.Contains("@") || a.Value.Contains("{")) continue;
+            string kind = floats.Contains(a.Name.LocalName) ? "float" : offsets.Contains(a.Name.LocalName) ? "rectoffset" : colors.Contains(a.Name.LocalName) ? "color" : null;
+            if (kind != null && a.Parent.Name.LocalName != "Template") Check(Values.Problem(kind, a.Value) == null, "the game uses " + a.Name + "=" + a.Value);
+        }
+
         History h = new History();
         int value = 0;
         Step step;

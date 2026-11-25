@@ -141,6 +141,8 @@ namespace SP2UIEditor
             if (!Tree.Set(w).Attributes.TryGetValue(attribute, out a)) return "a " + Tree.TypeName(w) + " has no attribute '" + attribute + "'";
             if (w.Stylesheet == null) return "this element is not ready yet";
             string resolved = w.Stylesheet.ReplaceConstants(value ?? "");
+            string wrong = Values.Problem(Tree.Kind(a), resolved);
+            if (wrong != null) return "'" + value + "' is not a value for " + attribute + ": " + wrong;
             Before before = Keep(w, attribute);
 
             // Tried on its own first: the game's own pass would only write an error to the log and leave the bad value in place.
