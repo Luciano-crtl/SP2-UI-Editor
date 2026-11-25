@@ -1,0 +1,8 @@
+bin/
+obj/
+publish/
+.vs/
+*.user
+# the game layouts and assets never enter the repository
+*.assets
+xml-game/

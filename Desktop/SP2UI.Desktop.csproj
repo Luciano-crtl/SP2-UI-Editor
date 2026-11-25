@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The editor's window: waits for the game and shows its page with WebView2 (part of Windows 10/11 through Edge). -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>SP2UIEditor</AssemblyName>
+    <RootNamespace>SP2UIEditor.Desktop</RootNamespace>
+    <Nullable>disable</Nullable>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <NoWarn>MSB3277</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4314.35" />
+  </ItemGroup>
+</Project>

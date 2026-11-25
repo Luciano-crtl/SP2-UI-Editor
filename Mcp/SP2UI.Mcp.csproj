@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The connector for Claude: an MCP server over standard input/output that passes the calls on to the plugin in the game. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>SP2UI.Mcp</AssemblyName>
+    <RootNamespace>SP2UIEditor.Mcp</RootNamespace>
+    <Nullable>disable</Nullable>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+</Project>

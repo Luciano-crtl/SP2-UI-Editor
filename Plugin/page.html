@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>SP2 UI Editor</title>
+<style>
+:root{--bg:#17191d;--panel:#1f2227;--line:#33373e;--text:#e8eaed;--dim:#9aa1ab;--blue:#3a7bd5;--green:#2f9e5b;--red:#d9534f;--amber:#e0a030}
+*{box-sizing:border-box}
+body{margin:0;height:100vh;display:flex;flex-direction:column;background:var(--bg);color:var(--text);font:14px/1.4 "Segoe UI",system-ui,sans-serif}
+button,input,select,textarea{font:inherit;color:inherit;background:#2a2e35;border:1px solid var(--line);border-radius:6px;padding:5px 9px}
+button{cursor:pointer}button:hover{background:#353a43}button:disabled{opacity:.4;cursor:default}
+button.main{background:var(--blue);border-color:var(--blue)}button.on{background:var(--amber);border-color:var(--amber);color:#111}
+button.danger{color:#ff9a96}
+:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+header{display:flex;gap:8px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--panel);flex-wrap:wrap}
+header b{margin-right:8px}.grow{flex:1}.dim{color:var(--dim)}.small{font-size:12px}
+main{flex:1;display:grid;grid-template-columns:320px 1fr 380px;min-height:0}
+section{display:flex;flex-direction:column;min-height:0;min-width:0;border-right:1px solid var(--line)}
+section:last-child{border-right:0}
+.bar{display:flex;gap:6px;padding:8px;border-bottom:1px solid var(--line);align-items:center;flex-wrap:wrap}
+.scroll{overflow:auto;flex:1;padding:6px}
+.row{display:flex;gap:4px;align-items:center;padding:2px 4px;border-radius:4px;cursor:pointer;white-space:nowrap}
+.row:hover{background:#2a2e35}.row.sel{background:var(--blue)}.row.off{opacity:.5}.row.drop{box-shadow:0 2px 0 var(--amber)}
+.row .tw{width:16px;text-align:center;color:var(--dim);flex:none}.row .ty{color:var(--dim);font-size:12px}.row.sel .ty{color:#dbe7fb}
+.tag{font-size:11px;border-radius:4px;padding:0 5px;background:var(--green)}
+#shotBox{position:relative;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;background:#0d0e10;overflow:hidden}
+#shot{max-width:100%;max-height:100%;cursor:crosshair}
+#mark{position:absolute;border:2px solid var(--blue);pointer-events:none;display:none}
+.field{display:grid;grid-template-columns:130px 1fr;gap:6px;align-items:center;margin:4px 0}
+.field label{color:var(--dim);overflow:hidden;text-overflow:ellipsis}.field.edited label{color:var(--amber)}
+.field input,.field select,.field textarea{width:100%;min-width:0}.pair{display:flex;gap:4px}.pair input[type=color]{width:42px;padding:1px;flex:none}
+h3{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--dim);margin:14px 0 4px}
+.crumbs{font-size:12px;color:var(--dim)}.crumbs a{color:#8db8f5;cursor:pointer}
+.note{border-left:3px solid var(--amber);padding:4px 8px;margin:6px 0;background:#2a2721;font-size:13px}
+code{font:12px Consolas,monospace;word-break:break-all;color:#c9d2de}
+#msg{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#2a2e35;border:1px solid var(--line);border-radius:8px;padding:8px 14px;display:none;max-width:70vw}
+#msg.bad{border-color:var(--red)}
+dialog{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:10px;width:560px;max-width:92vw;max-height:80vh}
+dialog::backdrop{background:#000a}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.cards button{text-align:left;min-height:52px}
+#off{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;text-align:center;padding:30px}
+</style>
+</head>
+<body>
+<header>
+  <b>SP2 UI Editor</b><span id="status" class="dim small"></span><span class="grow"></span>
+  <button id="pick"></button><button id="undo"></button><button id="redo"></button><button id="list"></button>
+  <label class="small"><input type="checkbox" id="claude"> <span id="claudeT"></span></label>
+  <select id="lang" aria-label="Language"><option value="pt">Português</option><option value="en">English</option></select>
+</header>
+<main>
+  <section>
+    <div class="bar"><input id="search" style="flex:1"><label class="small"><input type="checkbox" id="vis" checked> <span id="visT"></span></label><button id="reload">↻</button></div>
+    <div class="scroll" id="tree"></div>
+  </section>
+  <section>
+    <div class="bar"><span id="shotT" class="dim small"></span><span class="grow"></span>
+      <label class="small"><input type="checkbox" id="live" checked> <span id="liveT"></span></label></div>
+    <div id="shotBox"><img id="shot" alt=""><div id="mark"></div></div>
+  </section>
+  <section><div class="scroll" id="props"></div></section>
+</main>
+<div id="msg" role="status"></div>
+<dialog id="dlg"></dialog>
+<div id="off"><div><h2 id="offT"></h2><p class="dim" id="offP"></p></div></div>
+<script>
+'use strict';
+const T={pt:{pick:'Escolher no jogo',picking:'Clique no jogo (Esc cancela)',undo:'Desfazer',redo:'Refazer',list:'Mudanças',claude:'Claude pode editar',search:'Buscar texto ou id...',vis:'só visível',live:'imagem ao vivo',shot:'Clique na imagem para escolher um elemento',
+none:'Escolha um elemento: no jogo, na imagem ou na árvore.',basic:'Básico',adv:'Avançado',where:'De onde vem',add:'Adicionar',inside:'Dentro',after:'Depois',up:'Subir',down:'Descer',hide:'Esconder',del:'Remover',show:'Mostrar',classes:'Classes de estilo',
+parts:'Textos e partes',game:'O jogo escreve este texto enquanto roda e pode trocá-lo de novo.',tmpl:'Feito do modelo',built:'Esta tela foi montada antes do editor carregar ou por código de um mod. Reabra a tela para ver o arquivo.',inTmpl:'Vem de dentro de um modelo: outras telas usam o mesmo original. Sua mudança vale só aqui.',
+session:'Por enquanto as mudanças duram até a tela fechar.',changes:'Mudanças feitas',nothing:'Nenhuma mudança ainda.',close:'Fechar',off:'O jogo não está respondendo',offp:'Abra o SimplePlanes 2 com o plugin. Se recarregou com F6, reabra o editor.',label:'Texto',addTitle:'O que adicionar?',more:'Outros modelos desta tela',filter:'Filtrar atributos...',notExact:'desfazer pode não ser exato',
+k:{header:'Seção',btn:'Botão',btns:'Linha de botões',text:'Linha com valor',para:'Parágrafo',toggle:'Liga/desliga',slider:'Controle deslizante',img:'Imagem'},
+a:{text:'Texto',richText:'Texto rico',tooltip:'Dica (descrição)',color:'Cor',visible:'Visível',width:'Largura',height:'Altura',fontSize:'Tamanho da letra',alignment:'Alinhamento',sprite:'Imagem',position:'Posição',anchor:'Âncora',opacity:'Opacidade',margin:'Margem',padding:'Espaço interno',spacing:'Espaçamento',colSpan:'Colunas (de 12)',fontStyle:'Estilo da letra',interactable:'Clicável'}},
+en:{pick:'Pick in the game',picking:'Click in the game (Esc cancels)',undo:'Undo',redo:'Redo',list:'Changes',claude:'Claude may edit',search:'Search text or id...',vis:'visible only',live:'live picture',shot:'Click the picture to pick an element',
+none:'Pick an element: in the game, on the picture or in the tree.',basic:'Basic',adv:'Advanced',where:'Where it comes from',add:'Add',inside:'Inside',after:'After',up:'Up',down:'Down',hide:'Hide',del:'Remove',show:'Show',classes:'Style classes',
+parts:'Texts and parts',game:'The game writes this text while it runs and may change it again.',tmpl:'Made from template',built:'This screen was built before the editor loaded, or by a mod\'s code. Reopen it to see its file.',inTmpl:'It comes from inside a template other screens use too. Your change only counts here.',
+session:'For now changes last until the screen closes.',changes:'Changes made',nothing:'No changes yet.',close:'Close',off:'The game is not answering',offp:'Open SimplePlanes 2 with the plugin. If you reloaded with F6, reopen the editor.',label:'Text',addTitle:'What to add?',more:'Other templates of this screen',filter:'Filter attributes...',notExact:'undo may not be exact',
+k:{header:'Section',btn:'Button',btns:'Row of buttons',text:'Line with a value',para:'Paragraph',toggle:'Toggle',slider:'Slider',img:'Image'},
+a:{text:'Text',richText:'Rich text',tooltip:'Tooltip (description)',color:'Color',visible:'Visible',width:'Width',height:'Height',fontSize:'Font size',alignment:'Alignment',sprite:'Image',position:'Position',anchor:'Anchor',opacity:'Opacity',margin:'Margin',padding:'Padding',spacing:'Spacing',colSpan:'Columns (of 12)',fontStyle:'Font style',interactable:'Clickable'}}};
+const BASIC=['text','richText','tooltip','visible','color','width','height','position','anchor','fontSize','fontStyle','alignment','sprite','opacity','margin','padding','spacing','colSpan','interactable'];
+const $=id=>document.getElementById(id);
+const store=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}};
+let key=location.hash.slice(1);
+if(key){try{sessionStorage.setItem('key',key)}catch(e){} history.replaceState(null,'',location.pathname)}else{try{key=sessionStorage.getItem('key')||''}catch(e){}}
+let lang=store('lang')||'pt',t=T[lang],state={},sel=0,serial=-1,version=-1,scene='',details=null,open=new Set(),misses=0,busyShot=false,filter='',advOpen=false;
+
+async function api(path,body,raw){
+  const r=await fetch('/api/'+path,{method:'POST',headers:{'Content-Type':'application/json','X-SP2UI-Key':key},body:JSON.stringify(body||{})});
+  if(raw&&r.ok)return r.blob();
+  const j=await r.json(); if(!r.ok||j.error)throw Object.assign(new Error(j.error||r.status),{answered:true}); return j;
+}
+let msgTimer;function say(text,bad){const m=$('msg');m.textContent=text;m.className=bad?'bad':'';m.style.display='block';clearTimeout(msgTimer);msgTimer=setTimeout(()=>m.style.display='none',bad?6000:2500)}
+async function act(path,body){try{const r=await api(path,body);await tick();return r}catch(e){say(e.message,true)}}
+function el(tag,props,...kids){const e=document.createElement(tag);for(const k in props||{}){if(k==='cls')e.className=props[k];else if(k.startsWith('on'))e[k]=props[k];else if(k==='dis')e.disabled=props[k];else e.setAttribute(k,props[k])}for(const c of kids)if(c!=null)e.append(c);return e}
+function words(){t=T[lang];document.documentElement.lang=lang==='pt'?'pt-BR':'en';$('undo').textContent=t.undo;$('redo').textContent=t.redo;$('list').textContent=t.list;$('claudeT').textContent=t.claude;$('search').placeholder=t.search;$('visT').textContent=t.vis;$('liveT').textContent=t.live;$('shotT').textContent=t.shot;$('offT').textContent=t.off;$('offP').textContent=t.offp;$('lang').value=lang;drawProps()}
+
+// ---- tree ----
+const title=n=>n.text?'“'+n.text+'”':(n.id||n.template||n.type);
+let loading=0;
+async function drawTree(){
+  const box=$('tree'),my=++loading,q=$('search').value.trim(),vis=$('vis').checked;
+  try{
+    const frag=document.createDocumentFragment();
+    if(q){for(const n of await api('find',{text:q,visible:vis}))frag.append(line(n,0,true))}
+    else for(const s of await api('screens',{visible:vis}))await branch(frag,s,0,vis);
+    if(my!==loading)return;
+    const top=box.scrollTop;box.replaceChildren(frag);box.scrollTop=top;
+  }catch(e){if(e.answered)say(e.message,true)}
+}
+async function branch(into,n,depth,vis){
+  into.append(line(n,depth));
+  if(!open.has(n.h)||!n.n)return;
+  let kids=n.kids; if(!kids){try{kids=(await api('tree',{h:n.h,depth:1,visible:vis})).kids||[]}catch(e){open.delete(n.h);return}}
+  for(const k of kids)await branch(into,k,depth+1,vis);
+}
+function line(n,depth,flat){
+  const d=el('div',{cls:'row'+(n.h===sel?' sel':'')+(n.hidden?' off':''),draggable:'true',title:n.path||n.file||''});
+  d.style.paddingLeft=(4+depth*14)+'px';d.dataset.h=n.h;
+  d.append(el('span',{cls:'tw',onclick:e=>{e.stopPropagation();open.has(n.h)?open.delete(n.h):open.add(n.h);drawTree()}},n.n&&!flat?(open.has(n.h)?'▾':'▸'):''),
+    el('span',{},title(n)),el('span',{cls:'ty'},n.type+(n.file?' · '+n.file:'')),n.added?el('span',{cls:'tag'},'+'):'');
+  d.onclick=()=>pickHandle(n.h);
+  d.ondragstart=e=>e.dataTransfer.setData('text',n.h);
+  d.ondragover=e=>{e.preventDefault();d.classList.add('drop')};d.ondragleave=()=>d.classList.remove('drop');
+  d.ondrop=async e=>{e.preventDefault();d.classList.remove('drop');const h=+e.dataTransfer.getData('text');if(!h||h===n.h)return;
+    try{const to=await api('get',{h:n.h}),me=await api('get',{h});const p=to.ancestors[to.ancestors.length-1];if(!p)return;
+      const mp=me.ancestors[me.ancestors.length-1];let i=to.index+1;if(mp&&mp.h===p.h&&me.index<i)i--;
+      await act('move',{h,parent:p.h,index:i})}catch(x){say(x.message,true)}};
+  return d;
+}
+async function pickHandle(h){try{await api('select',{h});await tick()}catch(e){say(e.message,true);drawTree()}}
+
+// ---- properties ----
+async function loadProps(){
+  if(!sel){details=null;drawProps();return}
+  try{details=await api('get',{h:sel});for(const a of details.ancestors)open.add(a.h);details.parts=await parts(details.n?sel:0)}catch(e){details=null}
+  drawProps();placeMark();
+}
+async function parts(h){ if(!h)return[];const out=[];const walk=n=>{for(const k of n.kids||[]){if(k.type==='Text'||k.type==='Button'||k.type==='Image')out.push(k);if(out.length<12)walk(k)}};walk(await api('tree',{h,depth:4,visible:true}));return out.slice(0,12)}
+const hex=v=>/^#[0-9a-f]{6}/i.test(v||'')?v.slice(0,7):'#888888';
+function field(a){
+  const set=v=>{if(v!==(a.value||''))act('set',{h:sel,name:a.name,value:v})};
+  let input;
+  if(a.kind==='bool')input=el('select',{onchange:e=>set(e.target.value)},...['','true','false'].map(v=>{const o=el('option',{value:v},v||'—');if((a.value||'').toLowerCase()===v)o.selected=true;if(!v)o.disabled=true;return o}));
+  else if(a.kind==='enum')input=el('select',{onchange:e=>set(e.target.value)},...[a.value&&!a.options.includes(a.value)?a.value:'',...a.options].map(v=>{const o=el('option',{value:v},v||'—');if((a.value||'')===v)o.selected=true;if(!v)o.disabled=true;return o}));
+  else{
+    const long=a.name==='text'||a.name==='richText'||a.name==='tooltip';
+    input=el(long?'textarea':'input',{onchange:e=>set(e.target.value)});if(long)input.rows=2;
+    if(a.name==='text'&&details.type==='Text'&&a.value===undefined)input.value=details.fullText||'';else input.value=a.value||'';
+    if(a.kind==='color'){const c=el('input',{type:'color',value:hex(a.value),onchange:e=>set(e.target.value+((a.value||'').length===9?a.value.slice(7):'')),'aria-label':a.name});input=el('div',{cls:'pair'},c,input)}
+    else if(a.kind==='vector2')input.placeholder='x y';else if(a.kind==='rectoffset')input.placeholder='top right bottom left';
+  }
+  const inner=input.matches('div')?input.lastChild:input;inner.setAttribute('aria-label',a.name);
+  if(a.locked||a.dynamic)(input.matches('div')?[...input.children]:[input]).forEach(x=>x.disabled=true);
+  return el('div',{cls:'field'+(a.edited?' edited':'')},el('label',{title:a.name},t.a[a.name]||a.name),input);
+}
+function drawProps(){
+  const box=$('props');if(!details){box.replaceChildren(el('p',{cls:'dim'},t.none));return}
+  const d=details,parent=d.ancestors[d.ancestors.length-1],f=document.createDocumentFragment();
+  const cr=el('div',{cls:'crumbs'});d.ancestors.forEach(a=>cr.append(el('a',{onclick:()=>pickHandle(a.h)},a.name),' › '));cr.append(d.id||d.type);f.append(cr);
+  f.append(el('h2',{style:'margin:6px 0'},title(d)),el('div',{cls:'dim small'},d.type+(d.template?' · '+t.tmpl+' '+d.template:'')));
+  f.append(el('div',{cls:'bar',style:'padding:8px 0'},
+    el('button',{cls:'main',onclick:()=>addDialog(d.h,-1)},t.add+': '+t.inside),el('button',{dis:!parent,onclick:()=>addDialog(parent.h,d.index+1)},t.add+': '+t.after),
+    el('button',{dis:!parent||d.index===0,onclick:()=>act('move',{h:d.h,index:d.index-1})},t.up),el('button',{dis:!parent||d.index>=d.siblings-1,onclick:()=>act('move',{h:d.h,index:d.index+1})},t.down),
+    el('button',{cls:'danger',dis:!parent,onclick:()=>act(d.hidden&&!d.added?'set':'delete',d.hidden&&!d.added?{h:d.h,name:'visible',value:'true'}:{h:d.h})},d.added?t.del:d.hidden?t.show:t.hide)));
+  if(d.textSetByGame)f.append(el('div',{cls:'note'},t.game));
+  const by=Object.fromEntries(d.attributes.map(a=>[a.name,a]));
+  f.append(el('h3',{},t.basic));BASIC.filter(n=>by[n]).forEach(n=>f.append(field(by[n])));
+  if(d.parts&&d.parts.length){f.append(el('h3',{},t.parts));d.parts.forEach(p=>f.append(el('div',{cls:'row',onclick:()=>pickHandle(p.h)},el('span',{},title(p)),el('span',{cls:'ty'},p.type))))}
+  f.append(el('h3',{},t.classes));const cl=el('div',{cls:'bar',style:'padding:0;border:0'});
+  d.classes.forEach(c=>cl.append(el('button',{title:'−',onclick:()=>act('class',{h:d.h,name:c,on:false})},c+' ✕')));
+  const ci=el('input',{placeholder:'+ class',style:'width:120px',onchange:e=>act('class',{h:d.h,name:e.target.value.trim(),on:true})});cl.append(ci);f.append(cl);
+  const adv=el('details',{ontoggle:e=>advOpen=e.target.open},el('summary',{cls:'dim'},t.adv));if(advOpen)adv.open=true;
+  const list=el('div',{}),rest=d.attributes.filter(a=>!BASIC.includes(a.name));
+  const fill=()=>list.replaceChildren(...rest.filter(a=>a.name.toLowerCase().includes(filter)).sort((a,b)=>(b.own?1:0)-(a.own?1:0)||a.name.localeCompare(b.name)).map(field));
+  adv.append(el('input',{placeholder:t.filter,value:filter,style:'width:100%;margin:6px 0',oninput:e=>{filter=e.target.value.toLowerCase();fill()}}),list);fill();f.append(adv);
+  f.append(el('h3',{},t.where));
+  if(d.src)f.append(el('code',{},d.src));else f.append(el('div',{cls:'dim small'},t.built));
+  if(d.source)f.append(el('div',{},el('code',{},d.source)));
+  if(d.inTemplate)f.append(el('div',{cls:'note'},t.inTmpl));
+  f.append(el('p',{cls:'dim small'},t.session));
+  const top=box.scrollTop;box.replaceChildren(f);box.scrollTop=top;
+}
+
+// ---- adding ----
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+const KINDS={
+ header:x=>({xml:`<Instance templateId="control-header" title="${esc(x)}"/>`,need:'control-header'}),
+ btn:x=>({xml:`<Button class="btn btn-default" height="48" minHeight="48"><Text text="${esc(x)}"/></Button>`}),
+ btns:x=>({xml:`<Row height="48" spacing="16"><Button class="btn btn-default" colSpan="6"><Text text="${esc(x)} 1"/></Button><Button class="btn btn-default" colSpan="6"><Text text="${esc(x)} 2"/></Button></Row>`}),
+ text:x=>({xml:'<Instance templateId="control-text"/>',texts:{'label-text':x,'value-text':'...'},need:'control-text'}),
+ para:x=>({xml:`<Text text="${esc(x)}" fontSize="18" wordWrapping="true" alignment="TopLeft"/>`}),
+ toggle:x=>({xml:`<Instance templateId="control-toggle" label="${esc(x)}"/>`,need:'control-toggle'}),
+ slider:x=>({xml:`<Instance templateId="control-slider" label="${esc(x)}"/>`,need:'control-slider'}),
+ img:()=>({xml:'<Image width="64" height="64" color="#3a7bd5"/>'})};
+async function addDialog(parent,index){
+  let p;try{p=await api('palette',{h:parent})}catch(e){say(e.message,true);return}
+  const has=new Set(p.templates.map(x=>x.id)),dlg=$('dlg'),txt=el('input',{value:lang==='pt'?'Novo item':'New item',style:'width:100%'});
+  const put=async b=>{dlg.close();const r=await act('add',{parent,index,...b});if(r){open.add(parent);drawTree()}};
+  const cards=el('div',{cls:'cards'});for(const k in KINDS){const b=KINDS[k]('x');cards.append(el('button',{dis:!!b.need&&!has.has(b.need),onclick:()=>put(KINDS[k](txt.value))},t.k[k]))}
+  const more=el('select',{style:'width:100%',onchange:e=>{if(e.target.value)put({xml:`<Instance templateId="${esc(e.target.value)}"/>`})}},el('option',{value:''},'—'),...p.templates.map(x=>el('option',{value:x.id},x.id)));
+  dlg.replaceChildren(el('h3',{},t.addTitle),el('div',{cls:'field'},el('label',{},t.label),txt),cards,el('h3',{},t.more),more,el('p',{},el('button',{onclick:()=>dlg.close()},t.close)));dlg.showModal();txt.select();
+}
+async function changes(){const list=await api('changes').catch(e=>(say(e.message,true),null));if(!list)return;const dlg=$('dlg');
+  dlg.replaceChildren(el('h3',{},t.changes),list.length?el('ol',{},...list.map(s=>el('li',{},(s.by==='claude'?'Claude: ':'')+s.text+(s.exact?'':' ('+t.notExact+')')))):el('p',{cls:'dim'},t.nothing),el('button',{onclick:()=>dlg.close()},t.close));dlg.showModal()}
+
+// ---- picture ----
+function placeMark(){const m=$('mark'),i=$('shot');if(!details||!details.rect||details.hidden||!i.naturalWidth){m.style.display='none';return}
+  const r=details.rect,b=i.getBoundingClientRect(),o=$('shotBox').getBoundingClientRect();
+  Object.assign(m.style,{display:'block',left:(b.left-o.left+r.x*b.width)+'px',top:(b.top-o.top+r.y*b.height)+'px',width:r.w*b.width+'px',height:r.h*b.height+'px'})}
+async function shot(){if(busyShot||document.hidden)return;busyShot=true;try{const b=await api('shot',{w:1280,clean:false},true);const i=$('shot'),old=i.src;i.onload=()=>{if(old.startsWith('blob:'))URL.revokeObjectURL(old);placeMark()};i.src=URL.createObjectURL(b)}catch(e){}busyShot=false}
+$('shot').onclick=e=>{const b=e.target.getBoundingClientRect();act('pick',{x:(e.clientX-b.left)/b.width,y:(e.clientY-b.top)/b.height})};
+addEventListener('resize',placeMark);
+
+// ---- the clock ----
+let ticking=false,again=false;
+async function tick(){
+  if(ticking){again=true;return}ticking=true;
+  try{
+    state=await api('state');misses=0;$('off').style.display='none';
+    $('status').textContent='SP2 '+state.game+' · '+state.scene;$('pick').textContent=state.picking?t.picking:t.pick;$('pick').className=state.picking?'on':'main';
+    $('undo').disabled=!state.done;$('redo').disabled=!state.undone;$('claude').checked=state.claudeMayEdit;
+    const s=state.selectionSerial!==serial||state.selected!==sel,v=state.version!==version,sc=state.scene!==scene;
+    serial=state.selectionSerial;version=state.version;scene=state.scene;sel=state.selected;
+    if(s||v)await loadProps();
+    if(s||v||sc){await drawTree();if(s){const r=document.querySelector('.row.sel');if(r)r.scrollIntoView({block:'nearest'})}if($('live').checked||v)shot()}
+  }catch(e){if(++misses>2&&!e.answered||e.message==='wrong key')$('off').style.display='flex'}
+  ticking=false;if(again){again=false;tick()}
+}
+$('pick').onclick=()=>act('pick',{on:!state.picking});$('undo').onclick=()=>act('undo');$('redo').onclick=()=>act('redo');$('list').onclick=changes;
+$('claude').onchange=e=>act('allow',{on:e.target.checked});$('lang').onchange=e=>{lang=e.target.value;store('lang',lang);words();tick()};
+$('vis').onchange=$('reload').onclick=drawTree;let st;$('search').oninput=()=>{clearTimeout(st);st=setTimeout(drawTree,250)};
+addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){if(e.key==='z'){e.preventDefault();act('undo')}if(e.key==='y'){e.preventDefault();act('redo')}}});
+words();tick();setInterval(tick,700);setInterval(()=>{if($('live').checked)shot()},700);
+</script>
+</body>
+</html>
