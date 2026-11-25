@@ -265,6 +265,7 @@ namespace SP2UIEditor
                 disabled.Add(name);
                 Unapply(d => d.Package == p);
             }
+            Panels.CloseMissing();
             walk = true;
             SaveState();
             return null;
@@ -276,7 +277,7 @@ namespace SP2UIEditor
             if (index < 0 || index >= p.Ops.Count) return "no such edit";
             Op op = p.Ops[index];
             if (LiveEditor.History.Done.Any(s => s.Op == op)) return "that change is of this session: use undo";
-            List<Op> left = op.Do == "add" ? Package.Compact(p.Ops.Concat(new[] { new Op { Do = "remove", Target = "add:" + op.Uid } })) : p.Ops.Where(o => o != op).ToList();
+            List<Op> left = op.Do == "add" || op.Do == "panel" ? Package.Compact(p.Ops.Concat(new[] { new Op { Do = "remove", Target = (op.Do == "add" ? "add:" : "panel:") + op.Uid } })) : p.Ops.Where(o => o != op).ToList();
             HashSet<Op> gone = new HashSet<Op>(p.Ops.Except(left));
             List<Op> before = p.Ops;
             p.Ops = left;
@@ -284,6 +285,7 @@ namespace SP2UIEditor
             try { p.Write(p.Path); }
             catch (Exception e) { p.Ops = before; return e.Message; }
             Unapply(d => gone.Contains(d.Op));
+            Panels.CloseMissing();
             return null;
         }
 
@@ -314,11 +316,32 @@ namespace SP2UIEditor
                     ["ops"] = new JArray(p.Ops.Select(o => new JObject
                     {
                         ["text"] = o.Text,
-                        ["state"] = LiveEditor.History.Done.Any(s => s.Op == o) ? "session" : o.Orphan != null ? "orphan" : o.Applied > 0 ? "applied" : "waiting",
+                        ["state"] = LiveEditor.History.Done.Any(s => s.Op == o) ? "session" : o.Orphan != null ? "orphan" : o.Applied > 0 || o.Do == "panel" ? "applied" : "waiting",
                         ["why"] = o.Orphan,
                     })),
                 })),
             };
+        }
+
+        // Every edit in force: of the packages that are on, with this session's changes.
+        public static List<Op> Live()
+        {
+            List<Op> all = new List<Op>();
+            foreach (Package p in All) if (Enabled(p)) all.AddRange(p == Current ? p.Base : p.Ops);
+            all.AddRange(LiveEditor.History.Done.Where(s => s.Op != null).Select(s => s.Op));
+            return Package.Compact(all);
+        }
+
+        // The widgets that have an identity now.
+        public static List<Widget> Alive(string identity)
+        {
+            List<Widget> found = new List<Widget>();
+            if (string.IsNullOrEmpty(identity)) return found;
+            string leaf = Identity.LeafOf(identity);
+            List<Widget> all = new List<Widget>();
+            foreach (Widget r in Tree.Roots()) Collect(r, all);
+            foreach (Widget w in all) if (Identity.Leaf(w) == leaf && Identity.Of(w) == identity) found.Add(w);
+            return found;
         }
 
         // ---- applying ----
@@ -348,6 +371,7 @@ namespace SP2UIEditor
             else look = created.Where(w => w != null && w.Stylesheet != null).ToList();
             created.Clear();
             walk = false;
+            ops.RemoveAll(o => o.Value.Do == "panel");
             if (ops.Count == 0 || look.Count == 0) return;
             try { Apply(ops, look); }
             catch (Exception e) { EditorPlugin.Log.LogError("[UIEDIT] applying packages: " + e); }

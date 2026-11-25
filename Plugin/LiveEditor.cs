@@ -35,10 +35,10 @@ namespace SP2UIEditor
 
         private static void Record(Widget w, Op op, string author, string text, Func<string> undo, Func<string> redo, bool exact = true)
         {
-            Step step = new Step { Author = author, Text = text, Undo = undo, Redo = redo, Exact = exact, Op = op, Handle = Tree.Handle(w) };
+            Step step = new Step { Author = author, Text = text, Undo = undo, Redo = redo, Exact = exact, Op = op, Handle = w != null ? Tree.Handle(w) : 0 };
             if (op != null) op.Text = text;
             if (sink != null) { sink.Add(step); return; }
-            Packages.Mark(w, op);
+            if (w != null) Packages.Mark(w, op);
             History.Add(step);
         }
 
@@ -58,6 +58,7 @@ namespace SP2UIEditor
                     case "class": problem = w.HasClass(op.Name) == op.On ? null : Class(w, op.Name, op.On, "package"); break;
                     case "add": problem = Add(w, XElement.Parse(op.Xml), op.Index, op.Texts, "package", out made, op.Uid); break;
                     case "move": problem = parent == null ? "its new parent is not there" : Move(w, parent, op.Index, "package"); break;
+                    case "action": problem = Act(w, op.Name, op.Args, "package"); break;
                     default: problem = "unknown edit"; break;
                 }
             }
@@ -363,6 +364,52 @@ namespace SP2UIEditor
             Remove(w);
             // what was changed inside it afterwards does not come back: undoing it is not exact
             Record(oldParent, op, author, "removed " + name, () => MakeAgain(parentHandle, h, element, index, texts), () => RemoveHandle(h), false);
+            return null;
+        }
+
+        // ---- actions and panels ----
+
+        public static string Act(Widget w, string kind, Dictionary<string, string> args, string author)
+        {
+            string problem = Op.ActionProblem(kind, args);
+            if (problem != null) return problem;
+            int h = Tree.Handle(w);
+            Actions.Binding old = Actions.Of(w);
+            string oldKind = old != null ? old.Kind : "none";
+            Dictionary<string, string> oldArgs = old != null ? old.Args : null;
+            Func<string, Dictionary<string, string>, string> put = (k, a) =>
+            {
+                Widget at = Tree.Get(h);
+                if (at == null) return Gone;
+                string p = null;
+                if (k == "none") Actions.Unbind(at); else Actions.Bind(at, k, a, out p);
+                return p;
+            };
+            problem = put(kind, args);
+            if (problem != null) return problem;
+            string id = sink == null ? Identity.Of(w) : null;
+            Op op = id == null ? null : new Op { Do = "action", Target = id, Name = kind, Args = args, Prints = Identity.Prints(id) };
+            Record(w, op, author, Name(w) + ": action " + kind + (args == null ? "" : " " + string.Join(", ", args.Where(x => x.Key != "target").Select(x => x.Value))), () => put(oldKind, oldArgs), () => put(kind, args));
+            return null;
+        }
+
+        public static string NewPanel(string title, string author, out string uid)
+        {
+            uid = Guid.NewGuid().ToString("N").Substring(0, 12);
+            string made = uid;
+            Op op = new Op { Do = "panel", Target = "panel:" + uid, Uid = uid, Name = (title ?? "").Trim(), Value = "480" };
+            string problem = op.Problem();
+            if (problem != null) return problem;
+            Record(null, op, author, "new panel \"" + op.Name + "\"", () => { Panels.Close(made); return null; }, () => null);
+            return Panels.Open(uid);
+        }
+
+        public static string RemovePanel(string uid, string author)
+        {
+            Op def = Panels.Def(uid);
+            if (def == null) return "no such panel";
+            Panels.Close(uid);
+            Record(null, new Op { Do = "remove", Target = "panel:" + uid }, author, "removed panel \"" + def.Name + "\"", () => null, () => { Panels.Close(uid); return null; });
             return null;
         }
 

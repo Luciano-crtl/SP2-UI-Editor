@@ -196,6 +196,8 @@ namespace SP2UIEditor
             o["siblings"] = w.Parent != null ? w.Parent.Widgets.Count : 1;
 
             o["identity"] = Identity.Of(w);
+            Actions.Binding action = Actions.Of(w);
+            if (action != null) o["action"] = new JObject { ["kind"] = action.Kind, ["args"] = JObject.FromObject(action.Args) };
             string src = Src(w), file = Sources.FileOf(src);
             o["src"] = src;
             XElement raw;

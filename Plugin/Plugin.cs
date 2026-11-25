@@ -27,6 +27,7 @@ namespace SP2UIEditor
             // Its own id for each loaded copy: on a reload (F6) the new copy is made before the old one is removed, and the old one must only
             // take its own patches away.
             harmony = new Harmony("com.luciano.sp2uieditor." + Guid.NewGuid().ToString("N"));
+            Panels.Apply(harmony);
             Patches.Apply(harmony);
             try { Packages.Load(); }
             catch (Exception e) { Log.LogError("[UIEDIT] packages: " + e); }
@@ -52,6 +53,7 @@ namespace SP2UIEditor
         private void Update()
         {
             Packages.Tick();
+            Actions.Tick();
             if (server == null) return;
             server.Pump();
             Picker.Tick();
@@ -65,8 +67,10 @@ namespace SP2UIEditor
             if (quitting) return;
             Try("patches", () => harmony.UnpatchSelf());
             Try("overlay", Overlay.Destroy);
+            Try("panels", Panels.CloseAll);
             Try("changes", LiveEditor.UndoAll);
             Try("packages", Packages.UnapplyAll);
+            Try("actions", Actions.UnbindAll);
         }
 
         private static void Try(string name, Action action)

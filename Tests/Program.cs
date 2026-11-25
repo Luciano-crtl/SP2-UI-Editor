@@ -82,6 +82,19 @@ internal static class Program
             if (kind != null && a.Parent.Name.LocalName != "Template") Check(Values.Problem(kind, a.Value) == null, "the game uses " + a.Name + "=" + a.Value);
         }
 
+        // panels and actions
+        Dictionary<string, string> D(params string[] kv) { var d = new Dictionary<string, string>(); for (int i = 0; i < kv.Length; i += 2) d[kv[i]] = kv[i + 1]; return d; }
+        foreach (var good in new[] { ("none", D()), ("panel", D("panel", "ab12")), ("element", D("target", "src:F#1", "how", "toggle")), ("link", D("url", "https://x.y/z?a=1")), ("config", D("plugin", "a", "section", "b", "key", "c")), ("variable", D("name", "My_var1", "min", "0", "max", "2.5")), ("mod", D("name", "x")) })
+            Check(Op.ActionProblem(good.Item1, good.Item2) == null, "action " + good.Item1);
+        foreach (var bad in new[] { ("panel", D("panel", "a/b")), ("element", D("target", "x", "how", "destroy")), ("link", D("url", "file:///c:/x.exe")), ("link", D("url", "javascript:alert(1)")), ("link", D("url", "steam://run/1")), ("link", D("url", "https://a@b.c")), ("config", D("plugin", "a")), ("variable", D("name", "1x")), ("variable", D("name", "a b")), ("variable", D("name", "x", "max", "y")), ("method", D("name", "Quit")), ("mod", D()) })
+            Check(Op.ActionProblem(bad.Item1, bad.Item2) != null, "action " + bad.Item1 + " was accepted");
+        Op Panel(string uid) { return new Op { Do = "panel", Target = "panel:" + uid, Uid = uid, Name = "T", Value = "480" }; }
+        Check(Panel("ab").Problem() == null && new Op { Do = "panel", Target = "panel:ab", Uid = "ab", Name = "{x}" }.Problem() != null && new Op { Do = "panel", Target = "panel:../x", Uid = "../x", Name = "T" }.Problem() != null, "panels");
+        List<Op> pops = new List<Op> { Panel("p1"), Panel("p2"), new Op { Do = "add", Target = "src:SP2UI/p1#1.0", Uid = "u1", Xml = "<Text/>" }, new Op { Do = "action", Target = "add:u1", Name = "link", Args = D("url", "https://a.b") },
+            new Op { Do = "action", Target = "src:F#1", Name = "panel", Args = D("panel", "p1") }, new Op { Do = "action", Target = "src:F#2", Name = "panel", Args = D("panel", "p2") }, new Op { Do = "remove", Target = "panel:p1" } };
+        Check(Package.Compact(pops).Select(o => o.Target).SequenceEqual(new[] { "panel:p2", "src:F#2" }), "a removed panel takes its contents and the buttons' actions along");
+        Check(Package.Compact(new[] { new Op { Do = "action", Target = "a", Name = "link" }, new Op { Do = "action", Target = "a", Name = "none" } }).Count == 0, "no action");
+
         // packages
         Op S(string t, string n, string v) { return new Op { Do = "set", Target = t, Name = n, Value = v, Text = n }; }
         Op A(string t, string uid) { return new Op { Do = "add", Target = t, Uid = uid, Xml = "<Text text='x'/>", Text = uid }; }

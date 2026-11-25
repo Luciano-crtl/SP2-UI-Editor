@@ -11,13 +11,14 @@ namespace SP2UIEditor
     // added one, then "|step" for what is inside a template or made by code.
     public sealed class Op
     {
-        public string Do;                                  // set, class, add, move, remove
+        public string Do;                                  // set, class, add, move, remove, panel, action
         public string Target;                              // the element (add: its parent)
         public string Name, Value;                         // set: attribute and value; class: Name
         public bool On = true;                             // class
         public string Parent;                              // move: the new parent
         public int Index = -1;                             // add, move
         public string Uid, Xml;                            // add
+        public Dictionary<string, string> Args;            // action: what it needs (Name = its kind)
         public Dictionary<string, string> Texts;           // add: texts written into children, by id
         public Dictionary<string, string> Prints;          // what the layout elements named above looked like, to notice a change of the game
         public string Text;                                // for people
@@ -36,12 +37,56 @@ namespace SP2UIEditor
                 case "class": return string.IsNullOrWhiteSpace(Name) || Name.Contains(" ") ? "a class name is needed" : null;
                 case "move": return string.IsNullOrEmpty(Parent) ? "no parent" : null;
                 case "remove": return null;
+                case "panel":
+                    if (!GoodUid(Uid) || Target != "panel:" + Uid) return "no uid";
+                    if (string.IsNullOrWhiteSpace(Name) || !SafeXml.ValueAllowed(Name)) return "a title is needed";
+                    return Value == null || Values.Problem("int", Value) == null ? null : "its width must be a whole number";
+                case "action": return ActionProblem(Name, Args);
                 case "add":
-                    if (string.IsNullOrEmpty(Uid) || Uid.IndexOfAny(new[] { '|', ':', '#' }) >= 0) return "no uid";
+                    if (!GoodUid(Uid)) return "no uid";
                     try { return SafeXml.Problem(XElement.Parse(Xml ?? "")); }
                     catch (Exception) { return "its XML can't be read"; }
             }
             return "unknown edit '" + Do + "'";
+        }
+
+        private static bool GoodUid(string uid) { return !string.IsNullOrEmpty(uid) && uid.All(char.IsLetterOrDigit); }
+
+        public static bool GoodLink(string url)
+        {
+            Uri u;
+            return Uri.TryCreate(url, UriKind.Absolute, out u) && (u.Scheme == "http" || u.Scheme == "https") && string.IsNullOrEmpty(u.UserInfo);
+        }
+
+        // The kinds of action there are; null = good.
+        public static string ActionProblem(string kind, Dictionary<string, string> args)
+        {
+            Func<string, string> a = n => { string v; return args != null && args.TryGetValue(n, out v) ? v : null; };
+            switch (kind)
+            {
+                case "none": return null;
+                case "panel": return GoodUid(a("panel")) ? null : "choose a panel";
+                case "element":
+                    if (string.IsNullOrEmpty(a("target"))) return "choose an element";
+                    return new[] { "show", "hide", "toggle" }.Contains(a("how")) ? null : "show, hide or toggle";
+                case "link": return GoodLink(a("url")) ? null : "the address must begin with http:// or https://";
+                case "config":
+                    if (string.IsNullOrEmpty(a("plugin")) || string.IsNullOrEmpty(a("section")) || string.IsNullOrEmpty(a("key"))) return "choose a setting";
+                    return Limits(a);
+                case "variable":
+                    string n2 = a("name");
+                    if (string.IsNullOrEmpty(n2) || n2.Length > 40 || !(char.IsLetter(n2[0]) || n2[0] == '_') || !n2.All(c => c < 128 && (char.IsLetterOrDigit(c) || c == '_')))
+                        return "a variable's name has only letters, digits and _";
+                    return Limits(a);
+                case "mod": return string.IsNullOrEmpty(a("name")) ? "choose an action" : null;
+            }
+            return "unknown action '" + kind + "'";
+        }
+
+        private static string Limits(Func<string, string> a)
+        {
+            foreach (string n in new[] { "min", "max" }) if (a(n) != null && Values.Problem("float", a(n)) != null) return n + " must be a number";
+            return null;
         }
 
         // Layout files named by the edit.
@@ -157,16 +202,32 @@ namespace SP2UIEditor
                     {
                         more = false;
                         foreach (Op o in list)
-                            if (o.Do == "add" && !gone.Contains("add:" + o.Uid) && gone.Any(g => Op.Under(o.Target, g))) { gone.Add("add:" + o.Uid); more = true; }
+                            if (o.Do == "add" && !gone.Contains("add:" + o.Uid) && gone.Any(g => Within(o.Target, g))) { gone.Add("add:" + o.Uid); more = true; }
                     }
-                    list.RemoveAll(o => gone.Any(g => Op.Under(o.Target, g) || Op.Under(o.Parent, g) || (o.Do == "add" && "add:" + o.Uid == g)));
+                    list.RemoveAll(o => gone.Any(g => Within(o.Target, g) || Within(o.Parent, g) || OpensPanel(o, g) || (o.Do == "add" && "add:" + o.Uid == g)));
                     continue;
                 }
                 if (op.Do == "set" || op.Do == "class") list.RemoveAll(o => o.Do == op.Do && o.Target == op.Target && o.Name == op.Name);
+                if (op.Do == "action") list.RemoveAll(o => o.Do == "action" && o.Target == op.Target);
+                if (op.Do == "action" && op.Name == "none") continue;
+                if (op.Do == "panel") list.RemoveAll(o => o.Do == "panel" && o.Uid == op.Uid);
                 if (op.Do == "move") list.RemoveAll(o => o.Do == "move" && o.Target == op.Target);
                 list.Add(op);
             }
             return list;
+        }
+
+        // In what was removed: an added element, or anything in a panel.
+        private static bool Within(string identity, string gone)
+        {
+            if (identity == null) return false;
+            return Op.Under(identity, gone) || (gone.StartsWith("panel:") && identity.StartsWith("src:SP2UI/" + gone.Substring(6) + "#"));
+        }
+
+        private static bool OpensPanel(Op o, string gone)
+        {
+            string p;
+            return o.Do == "action" && gone.StartsWith("panel:") && o.Args != null && o.Args.TryGetValue("panel", out p) && o.Name == "panel" && "panel:" + p == gone;
         }
 
         // Two packages that want different things of the same attribute.

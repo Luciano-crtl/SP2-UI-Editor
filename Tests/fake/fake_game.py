@@ -40,6 +40,14 @@ def answer(path, b, by):
     if path == 'allow':
         if by == 'claude': return dict(error='only the user')
         S['allow'] = b['on']; return state()
+    if path == 'places': return [dict(name='flightMenu', h=2)] + [dict(name='panel:' + p['title'], h=3) for p in S.setdefault('panels', [])]
+    if path == 'panels': return S.setdefault('panels', [])
+    if path == 'panel_new': S.setdefault('panels', []).append(dict(uid='p%d' % len(S['panels']), title=b['title'], open=True)); S['sel'] = 2; S['serial'] += 1; return dict(ok=True, uid='p0', h=2)
+    if path == 'configs': return [dict(plugin='a.b', mod='Armor Fragments', section='Debug', key='DrawRays', kind='bool', value='true', text='Draws <b>rays</b>'), dict(plugin='a.b', mod='Armor Fragments', section='Energy', key='Resistance', kind='number', value='600', text='J')]
+    if path == 'mod_actions': return []
+    if path == 'action':
+        n = N[b['h']]; old = n.get('action'); new = dict(kind=b['kind'], args=b.get('args') or {})
+        return change(by, 'action ' + b['kind'], lambda: n.update(action=old), lambda: n.update(action=new if b['kind'] != 'none' else None))
     if path == 'packages': return dict(folder='C:/x', current=S.get('pkg'), unsaved=True, conflicts=['B replaces A: color'], problems=['bad.sp2ui: broken'], packages=[dict(name=p, on=p not in S.get('off', []), ops=[dict(text='"Quit": color = <b>', state='applied'), dict(text='x', state='orphan', why='gone')]) for p in S.setdefault('pkgs', [])])
     if path == 'package_new': S['pkgs'].append(b['name']); S['pkg'] = b['name']; return dict(ok=True)
     if path == 'package_use': S['pkg'] = b['name']; return dict(ok=True)
@@ -59,7 +67,7 @@ def answer(path, b, by):
         kinds = [('text', 'string'), ('tooltip', 'string'), ('visible', 'bool'), ('color', 'color'), ('width', 'float'), ('anchor', 'enum'), ('script', 'string'), ('raycastTarget', 'bool'), ('hoverClass', 'string')]
         at = [dict(name=k, kind=t, **({'value': n['attrs'][k], 'own': True} if k in n['attrs'] else {}), **({'options': ['TopLeft', 'Stretch']} if t == 'enum' else {}), **({'locked': True} if k == 'script' else {})) for k, t in kinds]
         sib = parent(n['h'])['kids'] if parent(n['h']) else [n['h']]
-        return dict(out(n, 0), path='p', ancestors=anc, fullText=text(n), classes=n['classes'], index=sib.index(n['h']), siblings=len(sib), src='Xml/Flight/FlightUI#1.0', source='<%s id="x" />' % n['type'], attributes=at, rect=dict(x=.1, y=.1 * (n['h'] % 7), w=.2, h=.08))
+        return dict(out(n, 0), **({'action': n['action']} if n.get('action') else {}), path='p', ancestors=anc, fullText=text(n), classes=n['classes'], index=sib.index(n['h']), siblings=len(sib), src='Xml/Flight/FlightUI#1.0', source='<%s id="x" />' % n['type'], attributes=at, rect=dict(x=.1, y=.1 * (n['h'] % 7), w=.2, h=.08))
     if path == 'set':
         k, v, old = b['name'], b['value'], n['attrs'].get(b['name'])
         return change(by, '%s = %s' % (k, v), lambda: n['attrs'].update({k: old}) if old is not None else n['attrs'].pop(k), lambda: n['attrs'].update({k: v}))

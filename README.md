@@ -1,6 +1,6 @@
 # SP2 UI Editor
 
-Edita a interface do SimplePlanes 2 (Juicy UI) com o jogo aberto. Fases 1 a 3 do plano: ver, editar ao vivo e salvar em pacotes (`BepInEx/config/SP2UIEditor/packages/*.sp2ui`).
+Edita a interface do SimplePlanes 2 (Juicy UI) com o jogo aberto. Fases 1 a 4 do plano: ver, editar ao vivo e salvar em pacotes (`BepInEx/config/SP2UIEditor/packages/*.sp2ui`).
 
 | Pasta | O que é |
 |---|---|
@@ -36,4 +36,6 @@ Testado: núcleo nos 79 XML do jogo, página e conector com o servidor falso. Te
 Limites: uma tela montada antes de o plugin carregar não mostra o arquivo de origem (reabra a tela). A página consulta o jogo a cada 0,7 s em vez de usar *long-poll*.
 Classes e itens removidos podem não voltar exatamente ao desfazer (a lista de mudanças avisa).
 
-Pacotes (fase 3): cada edição guarda a identidade do elemento e é refeita quando o jogo monta a tela (um quadro depois). Elemento que não existe mais vira órfão; nunca muda outro. Só testado fora do jogo (`Tests/live_packages.py` é o teste no jogo). Não feito: "manter o meu" para textos que o jogo reescreve.
+Pacotes (fase 3): cada edição guarda a identidade do elemento e é refeita quando o jogo monta a tela (um quadro depois). Elemento que não existe mais vira órfão; nunca muda outro. Testado no Designer com F6 e reinício (`Tests/live_packages.py`). Não feito: "manter o meu" para textos que o jogo reescreve.
+
+Painéis e ações (fase 4): um painel é um layout servido em `SP2UI/<uid>`; ações `panel`, `element`, `link` (só http/https, com confirmação), `config`, `variable`, `mod` (`SP2UIEditor.UiActions.Register`). Nenhuma executa código do pacote. Só compilado e testado com o servidor falso; teste no jogo: `Tests/live_panel.py`.

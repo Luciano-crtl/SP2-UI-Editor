@@ -237,7 +237,7 @@ namespace SP2UIEditor
             return w;
         }
 
-        private static readonly string[] Edits = { "set", "class", "add", "move", "delete", "undo", "redo", "save", "package_new", "package_use", "package_enable", "package_drop", "package_order" };
+        private static readonly string[] Edits = { "set", "class", "add", "move", "delete", "undo", "redo", "save", "package_new", "package_use", "package_enable", "package_drop", "package_order", "action", "panel_new", "panel_open", "panel_close", "panel_remove" };
 
         private JToken Answer(Job job)
         {
@@ -281,6 +281,24 @@ namespace SP2UIEditor
                     return Result(LiveEditor.Move(w, b["parent"] != null ? Wanted(b, "parent") : w.Parent, (int?)b["index"] ?? -1, job.Author));
                 }
                 case "delete": return Result(LiveEditor.Delete(Wanted(b), job.Author));
+                case "configs": return Actions.Configs();
+                case "mod_actions": return new JArray(UiActions.All.Keys.OrderBy(x => x));
+                case "panels": return Panels.Describe();
+                case "places": return Places();
+                case "action": return Act(b, job.Author);
+                case "panel_new":
+                {
+                    string uid;
+                    string problem = LiveEditor.NewPanel((string)b["title"], job.Author, out uid);
+                    return problem != null ? Error(problem) : PanelResult(uid);
+                }
+                case "panel_open":
+                {
+                    string problem = Panels.Open((string)b["uid"]);
+                    return problem != null ? Error(problem) : PanelResult((string)b["uid"]);
+                }
+                case "panel_close": Panels.Close((string)b["uid"]); return Result(null);
+                case "panel_remove": return Result(LiveEditor.RemovePanel((string)b["uid"], job.Author));
                 case "packages": return Packages.Describe();
                 case "save": return Result(Packages.Save());
                 case "package_new": return Result(Packages.New((string)b["name"]));
@@ -340,6 +358,51 @@ namespace SP2UIEditor
             JObject o = Result(null);
             o["h"] = Tree.Handle(made);
             return o;
+        }
+
+        private static JObject PanelResult(string uid)
+        {
+            Widget content = Panels.Content(uid);
+            if (content != null) Picker.Select(content);
+            JObject o = Result(null);
+            o["uid"] = uid;
+            o["h"] = content != null ? Tree.Handle(content) : 0;
+            return o;
+        }
+
+        private static JToken Act(JObject b, string author)
+        {
+            Widget w = Wanted(b);
+            Dictionary<string, string> args = b["args"] is JObject ? b["args"].ToObject<Dictionary<string, string>>() : null;
+            // an element is named by its number here, and saved by its identity
+            if ((string)b["kind"] == "element" && args != null && args.ContainsKey("h"))
+            {
+                args["target"] = Identity.Of(Wanted(JObject.FromObject(new { h = int.Parse(args["h"]) })));
+                args.Remove("h");
+            }
+            return Result(LiveEditor.Act(w, (string)b["kind"], args, author));
+        }
+
+        // Handy places to add things to, of the screens that exist now.
+        private static JArray Places()
+        {
+            JArray list = new JArray();
+            Action<string, Widget> add = (name, w) => { if (w != null) list.Add(new JObject { ["name"] = name, ["h"] = Tree.Handle(w) }); };
+            foreach (Op p in Panels.Defs()) add("panel:" + p.Name, Panels.Content(p.Uid));
+            foreach (var menu in UnityEngine.Object.FindObjectsByType<Assets.Scripts.Flight.UI.Panels.MenuPanelScript>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                if (menu.Widget != null)
+                {
+                    Widget button = menu.Widget.FindWidget("build-button");
+                    add("flightMenu", button != null ? button.Parent : menu.Widget);
+                }
+            foreach (Widget root in Tree.Roots())
+            {
+                Widget design = root.FindWidget("button-ghost-view"), flight = root.FindWidget("fire-panel"), part = root.FindWidget("items-parent");
+                if (design != null) add("designerBar", design.Parent);
+                if (flight != null) add("flightScreen", root.FindWidget("main-ui"));
+                if (part != null) add("partProperties", part);
+            }
+            return list;
         }
 
         private static JObject Palette(Widget w)
