@@ -158,7 +158,13 @@ namespace SP2UIEditor
 
         public static IEnumerable<BaseUnityPlugin> Mods()
         {
-            return UnityEngine.Object.FindObjectsByType<BaseUnityPlugin>(FindObjectsInactive.Include, FindObjectsSortMode.None).Where(p => p.Info != null && p.Info.Metadata != null);
+            return UnityEngine.Object.FindObjectsByType<BaseUnityPlugin>(FindObjectsInactive.Include, FindObjectsSortMode.None).Where(p => Meta(p) != null);
+        }
+
+        // Mods loaded by the Script Engine (F6) may have no Info: what their class says of itself is always there.
+        private static BepInPlugin Meta(BaseUnityPlugin p)
+        {
+            return p.Info != null && p.Info.Metadata != null ? p.Info.Metadata : MetadataHelper.GetMetadata(p.GetType());
         }
 
         private static readonly Dictionary<string, KeyValuePair<BaseUnityPlugin, ConfigEntryBase>> entries = new Dictionary<string, KeyValuePair<BaseUnityPlugin, ConfigEntryBase>>();
@@ -168,7 +174,7 @@ namespace SP2UIEditor
             string key = Arg(b, "plugin") + "|" + Arg(b, "section") + "|" + Arg(b, "key");
             KeyValuePair<BaseUnityPlugin, ConfigEntryBase> known;
             if (entries.TryGetValue(key, out known) && known.Key != null) return known.Value;     // a reloaded mod has new ones
-            foreach (BaseUnityPlugin p in Mods().Where(x => x.Info.Metadata.GUID == Arg(b, "plugin")))
+            foreach (BaseUnityPlugin p in Mods().Where(x => Meta(x).GUID == Arg(b, "plugin")))
                 foreach (KeyValuePair<ConfigDefinition, ConfigEntryBase> e in Pairs(p.Config))
                     if (e.Key.Section == Arg(b, "section") && e.Key.Key == Arg(b, "key"))
                     {
@@ -240,7 +246,7 @@ namespace SP2UIEditor
         public static JArray Configs()
         {
             JArray list = new JArray();
-            foreach (BaseUnityPlugin p in Mods().OrderBy(x => x.Info.Metadata.Name))
+            foreach (BaseUnityPlugin p in Mods().OrderBy(x => Meta(x).Name))
                 foreach (KeyValuePair<ConfigDefinition, ConfigEntryBase> e in Pairs(p.Config))
                 {
                     Type t = e.Value.SettingType;
@@ -248,7 +254,7 @@ namespace SP2UIEditor
                     if (kind == null) continue;
                     list.Add(new JObject
                     {
-                        ["plugin"] = p.Info.Metadata.GUID, ["mod"] = p.Info.Metadata.Name, ["section"] = e.Key.Section, ["key"] = e.Key.Key, ["kind"] = kind,
+                        ["plugin"] = Meta(p).GUID, ["mod"] = Meta(p).Name, ["section"] = e.Key.Section, ["key"] = e.Key.Key, ["kind"] = kind,
                         ["value"] = e.Value.GetSerializedValue(), ["text"] = e.Value.Description != null ? e.Value.Description.Description : "",
                     });
                 }

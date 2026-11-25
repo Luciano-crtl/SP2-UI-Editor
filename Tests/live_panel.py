@@ -33,6 +33,7 @@ print('places', places)
 cfg = api('configs')
 print(len(cfg), 'settings of', sorted({c['mod'] for c in cfg}))
 arm = [c for c in cfg if c['mod'] == 'Armor Fragments']
+check(bool(arm), 'Armor Fragments settings are listed')
 flag = next((c for c in arm if c['key'] == 'DrawRays'), next((c for c in arm if c['kind'] == 'bool'), None))
 number = next((c for c in arm if c['key'] == 'RayWidthScale'), next((c for c in arm if c['kind'] == 'number'), None))
 try:
