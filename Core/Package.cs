@@ -1,0 +1,184 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Xml.Linq;
+using Newtonsoft.Json;
+
+namespace SP2UIEditor
+{
+    // One saved edit. Targets are identities (see Identity in the plugin): "src:<file>#<place>" for an element of a layout, "add:<uid>" for an
+    // added one, then "|step" for what is inside a template or made by code.
+    public sealed class Op
+    {
+        public string Do;                                  // set, class, add, move, remove
+        public string Target;                              // the element (add: its parent)
+        public string Name, Value;                         // set: attribute and value; class: Name
+        public bool On = true;                             // class
+        public string Parent;                              // move: the new parent
+        public int Index = -1;                             // add, move
+        public string Uid, Xml;                            // add
+        public Dictionary<string, string> Texts;           // add: texts written into children, by id
+        public Dictionary<string, string> Prints;          // what the layout elements named above looked like, to notice a change of the game
+        public string Text;                                // for people
+
+        [JsonIgnore] public string Orphan;                 // why it can't be applied any more
+        [JsonIgnore] public int Applied;                   // to how many elements, so far
+
+        public string Problem()
+        {
+            if (string.IsNullOrEmpty(Target)) return "no target";
+            switch (Do)
+            {
+                case "set":
+                    if (!SafeXml.AttributeAllowed(Name)) return "the attribute '" + Name + "' is not allowed";
+                    return SafeXml.ValueAllowed(Value) ? null : "an expression is not allowed";
+                case "class": return string.IsNullOrWhiteSpace(Name) || Name.Contains(" ") ? "a class name is needed" : null;
+                case "move": return string.IsNullOrEmpty(Parent) ? "no parent" : null;
+                case "remove": return null;
+                case "add":
+                    if (string.IsNullOrEmpty(Uid) || Uid.IndexOfAny(new[] { '|', ':', '#' }) >= 0) return "no uid";
+                    try { return SafeXml.Problem(XElement.Parse(Xml ?? "")); }
+                    catch (Exception) { return "its XML can't be read"; }
+            }
+            return "unknown edit '" + Do + "'";
+        }
+
+        // Layout files named by the edit.
+        public IEnumerable<string> Bases()
+        {
+            foreach (string t in new[] { Target, Parent })
+                if (t != null && t.StartsWith("src:")) yield return BaseOf(t);
+        }
+
+        public static string BaseOf(string identity)
+        {
+            int bar = identity.IndexOf('|');
+            return bar < 0 ? identity : identity.Substring(0, bar);
+        }
+
+        public static bool Under(string identity, string of)
+        {
+            return identity != null && (identity == of || identity.StartsWith(of + "|"));
+        }
+
+        // How an element of a layout is recognized: kind, id and the words it was written with.
+        public static string Print(XElement e)
+        {
+            return e.Name.LocalName + ";" + (string)e.Attribute("id") + ";" + ((string)e.Attribute("text") ?? (string)e.Attribute("title") ?? (string)e.Attribute("templateId"));
+        }
+
+        // Where the element a base identity names is now: the same place if it still looks the same, else the only element with its id. Null = lost.
+        public static string Locate(string baseIdentity, string print, XElement raw)
+        {
+            string src = baseIdentity.Substring(4);
+            XElement e = Sources.Find(raw, src);
+            if (e != null && (print == null || Print(e) == print)) return baseIdentity;
+            string[] p = (print ?? "").Split(';');
+            if (p.Length < 2 || p[1].Length == 0) return null;
+            List<XElement> same = raw.Descendants().Where(x => (string)x.Attribute("id") == p[1] && x.Name.LocalName == p[0] && !Sources.InTemplate(x)).ToList();
+            if (same.Count != 1) return null;
+            List<int> place = new List<int>();
+            for (XElement at = same[0]; at.Parent != null; at = at.Parent) place.Insert(0, at.ElementsBeforeSelf().Count());
+            return "src:" + Sources.FileOf(src) + "#" + string.Join(".", place);
+        }
+    }
+
+    public sealed class Package
+    {
+        public int Format = 1;
+        public string Name;
+        public string Author;
+        public string GameVersion;
+        public List<Op> Ops = new List<Op>();
+
+        [JsonIgnore] public string Path;
+        [JsonIgnore] public List<Op> Base;                 // what it held before the changes of this session
+        [JsonIgnore] public List<string> Refused = new List<string>();
+
+        private static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
+        {
+            NullValueHandling = NullValueHandling.Ignore,
+            TypeNameHandling = TypeNameHandling.None,
+            MaxDepth = 16,
+        };
+
+        public string ToJson() { return JsonConvert.SerializeObject(this, Formatting.Indented, Settings); }
+
+        public static Package FromJson(string json)
+        {
+            Package p = JsonConvert.DeserializeObject<Package>(json, Settings);
+            if (p == null) throw new Exception("it is empty");
+            if (p.Format != 1) throw new Exception("it was made by a newer version of the editor (format " + p.Format + ")");
+            List<Op> good = new List<Op>();
+            foreach (Op op in p.Ops ?? new List<Op>())
+            {
+                string problem = op == null ? "empty edit" : op.Problem();
+                if (problem == null) good.Add(op); else p.Refused.Add((op != null ? op.Text + ": " : "") + problem);
+            }
+            p.Ops = good;
+            return p;
+        }
+
+        public void Write(string path)
+        {
+            // through a second file, so a crash never leaves half a package
+            string temp = path + ".tmp";
+            File.WriteAllText(temp, ToJson());
+            if (File.Exists(path)) File.Replace(temp, path, null); else File.Move(temp, path);
+            Path = path;
+        }
+
+        // What is left to do after all of them: a later value of the same thing replaces the earlier one, and an added element that was removed
+        // takes everything done to it along.
+        public static List<Op> Compact(IEnumerable<Op> ops)
+        {
+            List<Op> list = new List<Op>();
+            foreach (Op op in ops)
+            {
+                if (op.Do == "remove")
+                {
+                    // also what was added inside it, and what that held
+                    List<string> gone = new List<string> { op.Target };
+                    bool more = true;
+                    while (more)
+                    {
+                        more = false;
+                        foreach (Op o in list)
+                            if (o.Do == "add" && !gone.Contains("add:" + o.Uid) && gone.Any(g => Op.Under(o.Target, g))) { gone.Add("add:" + o.Uid); more = true; }
+                    }
+                    list.RemoveAll(o => gone.Any(g => Op.Under(o.Target, g) || Op.Under(o.Parent, g) || (o.Do == "add" && "add:" + o.Uid == g)));
+                    continue;
+                }
+                if (op.Do == "set" || op.Do == "class") list.RemoveAll(o => o.Do == op.Do && o.Target == op.Target && o.Name == op.Name);
+                if (op.Do == "move") list.RemoveAll(o => o.Do == "move" && o.Target == op.Target);
+                list.Add(op);
+            }
+            return list;
+        }
+
+        // Two packages that want different things of the same attribute.
+        public static List<string> Conflicts(IList<Package> inOrder)
+        {
+            List<string> found = new List<string>();
+            Dictionary<string, KeyValuePair<Package, Op>> seen = new Dictionary<string, KeyValuePair<Package, Op>>();
+            foreach (Package p in inOrder)
+                foreach (Op op in p.Ops)
+                {
+                    if (op.Do != "set" && op.Do != "move") continue;
+                    string key = op.Do + " " + op.Target + " " + op.Name;
+                    KeyValuePair<Package, Op> other;
+                    if (seen.TryGetValue(key, out other) && other.Key != p && (other.Value.Value != op.Value || other.Value.Parent != op.Parent || other.Value.Index != op.Index))
+                        found.Add(p.Name + " replaces " + other.Key.Name + ": " + op.Text);
+                    seen[key] = new KeyValuePair<Package, Op>(p, op);
+                }
+            return found;
+        }
+
+        public static string SafeFileName(string name)
+        {
+            string s = new string((name ?? "").Trim().Select(c => char.IsLetterOrDigit(c) || c == '-' || c == '_' || c == ' ' ? c : '_').ToArray()).Trim();
+            return s.Length == 0 ? null : s.Length > 60 ? s.Substring(0, 60) : s;
+        }
+    }
+}

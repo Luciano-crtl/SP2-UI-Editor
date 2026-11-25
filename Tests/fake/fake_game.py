@@ -23,7 +23,7 @@ def out(n, depth):
         o['n'] = len(n['kids'])
         if depth: o['kids'] = [out(N[k], depth - 1) for k in n['kids']]
     return {k: v for k, v in o.items() if v not in (None, False)}
-def state(): return dict(plugin='fake', game='0.0', scene='Flight', picking=S['picking'], selected=S['sel'], selectionSerial=S['serial'], version=S['version'], done=len(S['log']), undone=len(S['undone']), claudeMayEdit=S['allow'], screen=dict(w=1920, h=1080))
+def state(): return dict(plugin='fake', game='0.0', scene='Flight', picking=S['picking'], selected=S['sel'], selectionSerial=S['serial'], version=S['version'], done=len(S['log']), undone=len(S['undone']), claudeMayEdit=S['allow'], package=S.get('pkg'), unsaved=S.get('uns', True), screen=dict(w=1920, h=1080))
 def change(by, what, undo, redo):
     redo(); S['log'].append((by, what, undo, redo)); S['undone'].clear(); S['version'] += 1; return dict(ok=True, version=S['version'])
 def answer(path, b, by):
@@ -40,6 +40,11 @@ def answer(path, b, by):
     if path == 'allow':
         if by == 'claude': return dict(error='only the user')
         S['allow'] = b['on']; return state()
+    if path == 'packages': return dict(folder='C:/x', current=S.get('pkg'), unsaved=True, conflicts=['B replaces A: color'], problems=['bad.sp2ui: broken'], packages=[dict(name=p, on=p not in S.get('off', []), ops=[dict(text='"Quit": color = <b>', state='applied'), dict(text='x', state='orphan', why='gone')]) for p in S.setdefault('pkgs', [])])
+    if path == 'package_new': S['pkgs'].append(b['name']); S['pkg'] = b['name']; return dict(ok=True)
+    if path == 'package_use': S['pkg'] = b['name']; return dict(ok=True)
+    if path == 'package_enable': (S.setdefault('off', []).remove if b['on'] else S.setdefault('off', []).append)(b['name']); return dict(ok=True)
+    if path in ('save', 'package_drop', 'package_order'): S['uns'] = False; return dict(ok=True)
     if path == 'changes': return [dict(n=i, by=l[0], text=l[1], exact=True) for i, l in enumerate(S['log'])]
     if path == 'palette': return dict(templates=[dict(id=x, attributes={}) for x in ('control-header', 'control-text', 'control-toggle', 'flyout')], classes=['btn'])
     if path in ('undo', 'redo'):

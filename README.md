@@ -1,6 +1,6 @@
 # SP2 UI Editor
 
-Edita a interface do SimplePlanes 2 (Juicy UI) com o jogo aberto. Fases 1 e 2 do plano: ver e editar ao vivo. **Ainda não salva**: as mudanças duram até a tela fechar.
+Edita a interface do SimplePlanes 2 (Juicy UI) com o jogo aberto. Fases 1 a 3 do plano: ver, editar ao vivo e salvar em pacotes (`BepInEx/config/SP2UIEditor/packages/*.sp2ui`).
 
 | Pasta | O que é |
 |---|---|
@@ -35,3 +35,5 @@ Descarregar o plugin (F6) desfaz as mudanças.
 Testado: núcleo nos 79 XML do jogo, página e conector com o servidor falso. Testado no jogo (Designer, `Tests/live_test.py`): seleção, busca, captura, editar, esconder, mover, adicionar, remover, desfazer e refazer. **Falta**: voo, menu principal, F6 com mudanças feitas, recusa de valores inválidos (só fora do jogo).
 Limites: uma tela montada antes de o plugin carregar não mostra o arquivo de origem (reabra a tela). A página consulta o jogo a cada 0,7 s em vez de usar *long-poll*.
 Classes e itens removidos podem não voltar exatamente ao desfazer (a lista de mudanças avisa).
+
+Pacotes (fase 3): cada edição guarda a identidade do elemento e é refeita quando o jogo monta a tela (um quadro depois). Elemento que não existe mais vira órfão; nunca muda outro. Só testado fora do jogo (`Tests/live_packages.py` é o teste no jogo). Não feito: "manter o meu" para textos que o jogo reescreve.

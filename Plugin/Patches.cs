@@ -28,12 +28,38 @@ namespace SP2UIEditor
         public static Instance InstanceOf(Widget w)
         {
             Instance i;
-            return !ReferenceEquals(w, null) && instances.TryGetValue(w, out i) ? i : null;
+            if (ReferenceEquals(w, null)) return null;
+            if (instances.TryGetValue(w, out i)) return i;
+            // made while an earlier copy of the editor was loaded (F6): it wrote what it knew on the element
+            XElement e = w.Element;
+            string template = e != null ? (string)e.Attribute("_tmpl") : null;
+            if (template == null) return null;
+            i = instances.GetOrCreateValue(w);
+            i.Template = template;
+            i.Src = (string)e.Attribute("_inst");
+            string label = (string)e.Attribute("_label");
+            if (label != null) i.Attributes["label"] = label;
+            return i;
         }
+
+        // The layout as it is in the game's files; fetched when this copy of the editor has not seen it load.
+        public static XElement RawOf(string path)
+        {
+            XElement raw;
+            if (path == null) return null;
+            if (Raw.TryGetValue(path, out raw)) return raw;
+            try { Assets.Scripts.Game.Instance.UserInterface.ResourceLoader.LoadXml(path); }
+            catch (Exception) { }
+            if (!Raw.TryGetValue(path, out raw)) Raw[path] = null;
+            return raw;
+        }
+
+        private static void CreatedPostfix(Widget __result) { if (__result != null) Packages.Created(__result); }
 
         public static void Apply(Harmony harmony)
         {
             Patch(harmony, "LoadXml", AccessTools.Method(typeof(ResourceLoader), "LoadXml"), nameof(LoadXmlPostfix));
+            Patch(harmony, "created widgets", AccessTools.Method(typeof(WidgetContext), "CreateWidget", new[] { typeof(XElement), typeof(Widget), typeof(Stylesheet) }), nameof(CreatedPostfix));
             Patch(harmony, "template instances", AccessTools.Method(typeof(WidgetContext), "CreateWidgetFromTemplate",
                 new[] { typeof(XElement), typeof(Widget), typeof(Stylesheet) }), nameof(InstancePostfix));
             Patch(harmony, "templates by code", AccessTools.Method(typeof(WidgetContext), "CreateWidgetFromTemplate",
@@ -87,6 +113,14 @@ namespace SP2UIEditor
                 {
                     if (a.Name.LocalName == Sources.Mark) i.Src = a.Value;
                     else if (a.Name.LocalName != "templateId") i.Attributes[a.Name.LocalName] = a.Value;
+                }
+                if (w.Element != null)
+                {
+                    string label;
+                    if (!i.Attributes.TryGetValue("label", out label)) i.Attributes.TryGetValue("title", out label);
+                    w.Element.SetAttributeValue("_tmpl", template);
+                    w.Element.SetAttributeValue("_inst", i.Src);
+                    w.Element.SetAttributeValue("_label", label);
                 }
             }
             catch (Exception e) { EditorPlugin.Log.LogWarning("[UIEDIT] template '" + template + "': " + e.Message); }

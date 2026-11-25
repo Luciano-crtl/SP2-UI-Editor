@@ -37,6 +37,11 @@ namespace SP2UIEditor.Mcp
             new Tool { Name = "ui_add", Api = "add", Edits = true, Text = "Adds an element (Juicy XML, e.g. <Button class=\"btn btn-default\" height=\"48\"><Text text=\"Hi\"/></Button> or <Instance templateId=\"control-header\" title=\"Section\"/>).", Args = new[] { "*parent:integer:the element to add it to", "*xml:string:one element", "index:integer:its place (default last)", "texts:object:texts to write into children, by id" } },
             new Tool { Name = "ui_move", Api = "move", Edits = true, Text = "Moves an element to another place or parent on its screen.", Args = new[] { "*h:integer:the element", "*index:integer:the place", "parent:integer:the new parent (default: the same)" } },
             new Tool { Name = "ui_delete", Api = "delete", Edits = true, Text = "Removes an added element; an element of the game is hidden instead.", Args = new[] { "*h:integer:the element" } },
+            new Tool { Name = "ui_packages", Api = "packages", Text = "The saved packages of edits: which are on, where new edits are saved, what each edit's state is (applied, waiting for its screen, orphan), conflicts and problems.", Args = new string[0] },
+            new Tool { Name = "ui_save", Api = "save", Edits = true, Text = "Saves the changes of this session into the current package, so they come back when the screen or the game is opened again.", Args = new string[0] },
+            new Tool { Name = "ui_package_new", Api = "package_new", Edits = true, Text = "Makes an empty package and makes it the current one.", Args = new[] { "*name:string:its name" } },
+            new Tool { Name = "ui_package_use", Api = "package_use", Edits = true, Text = "Makes another package the one new edits are saved in.", Args = new[] { "*name:string:the package" } },
+            new Tool { Name = "ui_package_enable", Api = "package_enable", Edits = true, Text = "Switches a package on or off, live.", Args = new[] { "*name:string:the package", "*on:boolean:on or off" } },
             new Tool { Name = "ui_undo", Api = "undo", Edits = true, Text = "Undoes the last change (the user's too: look at ui_changes first).", Args = new string[0] },
             new Tool { Name = "ui_redo", Api = "redo", Edits = true, Text = "Redoes the last undone change.", Args = new string[0] },
         };

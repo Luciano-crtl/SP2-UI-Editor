@@ -195,10 +195,11 @@ namespace SP2UIEditor
             o["index"] = w.Parent != null ? w.Index : 0;
             o["siblings"] = w.Parent != null ? w.Parent.Widgets.Count : 1;
 
+            o["identity"] = Identity.Of(w);
             string src = Src(w), file = Sources.FileOf(src);
             o["src"] = src;
             XElement raw;
-            if (file != null && Patches.Raw.TryGetValue(file, out raw))
+            if (file != null && (raw = Patches.RawOf(file)) != null)
             {
                 XElement element = Sources.Find(raw, src);
                 if (element != null)

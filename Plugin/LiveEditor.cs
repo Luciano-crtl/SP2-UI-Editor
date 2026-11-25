@@ -23,6 +23,51 @@ namespace SP2UIEditor
         private static readonly Dictionary<int, XElement> recipes = new Dictionary<int, XElement>();
         private static readonly Dictionary<int, Dictionary<string, string>> recipeTexts = new Dictionary<int, Dictionary<string, string>>();
 
+        private static readonly Dictionary<int, string> uids = new Dictionary<int, string>();   // handle of an added element -> its saved name
+        private static List<Step> sink;                                                         // replaying a package: the steps go here, not to the history
+
+        public static string UidOf(Widget w)
+        {
+            if (uids.Count == 0 || w == null) return null;
+            string uid;
+            return uids.TryGetValue(Tree.Handle(w), out uid) ? uid : null;
+        }
+
+        private static void Record(Widget w, Op op, string author, string text, Func<string> undo, Func<string> redo, bool exact = true)
+        {
+            Step step = new Step { Author = author, Text = text, Undo = undo, Redo = redo, Exact = exact, Op = op, Handle = Tree.Handle(w) };
+            if (op != null) op.Text = text;
+            if (sink != null) { sink.Add(step); return; }
+            Packages.Mark(w, op);
+            History.Add(step);
+        }
+
+        // A saved edit, done again to a widget of a screen that was just built.
+        public static string Replay(Op op, Widget w, Widget parent, out Step step, out Widget made)
+        {
+            made = null;
+            step = null;
+            List<Step> steps = new List<Step>();
+            sink = steps;
+            string text = op.Text, problem;
+            try
+            {
+                switch (op.Do)
+                {
+                    case "set": problem = Set(w, op.Name, op.Value, "package"); break;
+                    case "class": problem = w.HasClass(op.Name) == op.On ? null : Class(w, op.Name, op.On, "package"); break;
+                    case "add": problem = Add(w, XElement.Parse(op.Xml), op.Index, op.Texts, "package", out made, op.Uid); break;
+                    case "move": problem = parent == null ? "its new parent is not there" : Move(w, parent, op.Index, "package"); break;
+                    default: problem = "unknown edit"; break;
+                }
+            }
+            catch (Exception e) { problem = e.GetBaseException().Message; }
+            finally { sink = null; }
+            op.Text = text;
+            step = steps.FirstOrDefault();
+            return problem;
+        }
+
         private const string Gone = "that element no longer exists (its screen was closed)";
 
         public static bool IsAdded(Widget w)
@@ -143,6 +188,7 @@ namespace SP2UIEditor
             string resolved = w.Stylesheet.ReplaceConstants(value ?? "");
             string wrong = Values.Problem(Tree.Kind(a), resolved);
             if (wrong != null) return "'" + value + "' is not a value for " + attribute + ": " + wrong;
+            string named = Name(w);
             Before before = Keep(w, attribute);
 
             // Tried on its own first: the game's own pass would only write an error to the log and leave the bad value in place.
@@ -158,7 +204,9 @@ namespace SP2UIEditor
             int h = Tree.Handle(w);
             string key = h + " " + attribute;
             bool first = touched.Add(key);
-            History.Add(author, Name(w) + ": " + attribute + " = " + value + (before.Own ? " (was " + before.Value + ")" : ""),
+            string id = sink == null ? Identity.Of(w) : null;
+            Op op = id == null ? null : new Op { Do = "set", Target = id, Name = attribute, Value = value, Prints = Identity.Prints(id) };
+            Record(w, op, author, named + ": " + attribute + " = " + value + (before.Own ? " (was " + before.Value + ")" : ""),
                 () =>
                 {
                     Widget at = Tree.Get(h);
@@ -197,13 +245,15 @@ namespace SP2UIEditor
             };
             string problem = put(on);
             if (problem != null) return problem;
-            History.Add(author, Name(w) + ": " + (on ? "+ " : "- ") + "class " + name, () => put(!on), () => put(on), false);
+            string id = sink == null ? Identity.Of(w) : null;
+            Op op = id == null ? null : new Op { Do = "class", Target = id, Name = name, On = on, Prints = Identity.Prints(id) };
+            Record(w, op, author, Name(w) + ": " + (on ? "+ " : "- ") + "class " + name, () => put(!on), () => put(on), false);
             return null;
         }
 
         // ---- adding and removing ----
 
-        public static string Add(Widget parent, XElement element, int index, Dictionary<string, string> texts, string author, out Widget made)
+        public static string Add(Widget parent, XElement element, int index, Dictionary<string, string> texts, string author, out Widget made, string uid = null)
         {
             made = null;
             string problem = SafeXml.Problem(element);
@@ -216,14 +266,27 @@ namespace SP2UIEditor
 
             XElement kept = new XElement(element);
             int parentHandle = Tree.Handle(parent);
+            string id = sink == null ? Identity.Of(parent) : null;
             made = Make(parent, kept, index, texts);
             if (made == null) return "the game could not make it (see the log)";
             int h = Tree.Handle(made);
             added.Add(h);
+            if (uid == null) uid = Guid.NewGuid().ToString("N").Substring(0, 12);
+            uids[h] = uid;
+            // the screen was built again: the changes made to the earlier one go on with this one
+            foreach (int old in uids.Where(x => x.Key != h && x.Value == uid && Tree.Get(x.Key) == null).Select(x => x.Key).ToList())
+            {
+                uids.Remove(h);
+                added.Remove(h);
+                Tree.Rebind(old, made);
+                h = old;
+                break;
+            }
             recipes[h] = kept;
             recipeTexts[h] = texts;
             string what = (string)element.Attribute("templateId") ?? element.Name.LocalName;
-            History.Add(author, "added " + what + " to " + Name(parent), () => RemoveHandle(h), () => MakeAgain(parentHandle, h, kept, index, texts));
+            Op op = id == null ? null : new Op { Do = "add", Target = id, Uid = uid, Xml = kept.ToString(SaveOptions.DisableFormatting), Texts = texts, Index = index, Prints = Identity.Prints(id) };
+            Record(parent, op, author, "added " + what + " to " + Name(parent), () => RemoveHandle(h), () => MakeAgain(parentHandle, h, kept, index, texts));
             return null;
         }
 
@@ -287,6 +350,8 @@ namespace SP2UIEditor
             int h = Tree.Handle(w);
             if (w.Parent == null) return "a whole screen can't be removed";
             if (!added.Contains(h)) return Set(w, "visible", "false", author);
+            Op op = sink == null ? new Op { Do = "remove", Target = "add:" + uids[h] } : null;
+            Widget oldParent = w.Parent;
             int index = w.Index, parentHandle = Tree.Handle(w.Parent);
             Dictionary<string, string> texts;
             recipeTexts.TryGetValue(h, out texts);
@@ -297,7 +362,7 @@ namespace SP2UIEditor
             string name = Name(w);
             Remove(w);
             // what was changed inside it afterwards does not come back: undoing it is not exact
-            History.Add(author, "removed " + name, () => MakeAgain(parentHandle, h, element, index, texts), () => RemoveHandle(h), false);
+            Record(oldParent, op, author, "removed " + name, () => MakeAgain(parentHandle, h, element, index, texts), () => RemoveHandle(h), false);
             return null;
         }
 
@@ -313,6 +378,7 @@ namespace SP2UIEditor
                 if (parent is TextWidget) return "a text holds no other elements";
                 if (w.Context != parent.Context) return "it can't move to another screen";
             }
+            string id = sink == null ? Identity.Of(w) : null, idTo = sink == null ? Identity.Of(parent) : null;
             int h = Tree.Handle(w), from = Tree.Handle(w.Parent), to = Tree.Handle(parent), oldIndex = w.Index;
             Func<int, int, string> put = (p, i) =>
             {
@@ -328,7 +394,8 @@ namespace SP2UIEditor
             string problem = put(to, index);
             if (problem != null) return problem;
             int newIndex = w.Index;
-            History.Add(author, "moved " + Name(w) + " to place " + (newIndex + 1) + " in " + Name(parent), () => put(from, oldIndex), () => put(to, newIndex));
+            Op op = id == null ? null : new Op { Do = "move", Target = id, Parent = idTo, Index = newIndex, Prints = Identity.Prints(id, idTo) };
+            Record(w, op, author, "moved " + Name(w) + " to place " + (newIndex + 1) + " in " + Name(parent), () => put(from, oldIndex), () => put(to, newIndex));
             return null;
         }
 

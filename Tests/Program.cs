@@ -82,6 +82,39 @@ internal static class Program
             if (kind != null && a.Parent.Name.LocalName != "Template") Check(Values.Problem(kind, a.Value) == null, "the game uses " + a.Name + "=" + a.Value);
         }
 
+        // packages
+        Op S(string t, string n, string v) { return new Op { Do = "set", Target = t, Name = n, Value = v, Text = n }; }
+        Op A(string t, string uid) { return new Op { Do = "add", Target = t, Uid = uid, Xml = "<Text text='x'/>", Text = uid }; }
+        Package pk = new Package { Name = "P", Ops = { S("src:F#1.0", "color", "#ffffff"), A("src:F#1.0", "u1"), new Op { Do = "move", Target = "add:u1", Parent = "src:F#1.1", Index = 2 } } };
+        Package back = Package.FromJson(pk.ToJson());
+        Check(back.ToJson() == pk.ToJson() && back.Ops.Count == 3 && back.Refused.Count == 0, "a package written and read");
+        Package evil = Package.FromJson("{\"Format\":1,\"Ops\":[{\"Do\":\"set\",\"Target\":\"x\",\"Name\":\"onClick\",\"Value\":\"Quit\"},{\"Do\":\"add\",\"Target\":\"x\",\"Uid\":\"a\",\"Xml\":\"<Empty script='X'/>\"},{\"Do\":\"add\",\"Target\":\"x\",\"Uid\":\"a\",\"Xml\":\"<bad\"},{\"Do\":\"run\",\"Target\":\"x\"},null,{\"Do\":\"set\",\"Target\":\"x\",\"Name\":\"text\",\"Value\":\"{a}\"}]}");
+        Check(evil.Ops.Count == 0 && evil.Refused.Count == 6, "unsafe edits of a package are refused");
+        foreach (string broken in new[] { "", "{", "[]", "{\"Format\":2}" })
+        {
+            bool threw = false;
+            try { Package.FromJson(broken); } catch (Exception) { threw = true; }
+            Check(threw, "a broken package was read: " + broken);
+        }
+        Check(Package.Compact(new[] { S("a", "color", "1"), S("a", "color", "2"), S("b", "color", "3") }).Select(o => o.Value).SequenceEqual(new[] { "2", "3" }), "the last value counts");
+        Check(Package.Compact(new[] { A("p", "u1"), S("add:u1|n:Text", "text", "x"), A("add:u1|n:Row", "u2"), S("add:u2", "text", "y"), A("p", "u10"), S("p", "color", "z"), new Op { Do = "remove", Target = "add:u1" } })
+              .Select(o => o.Uid ?? o.Name).SequenceEqual(new[] { "u10", "color" }), "a removed element takes its edits along");
+        Check(Package.Conflicts(new[] { new Package { Name = "A", Ops = { S("x", "color", "1"), S("x", "width", "1") } }, new Package { Name = "B", Ops = { S("x", "color", "2"), S("x", "width", "1") } } }).Count == 1, "conflicts");
+        Check(Package.SafeFileName("..\\x/y:z") == "___x_y_z" && Package.SafeFileName("  ") == null, "file names");
+        foreach (XElement l in layouts)
+        {
+            XElement x = new XElement(l);
+            Sources.Stamp("F", x);
+            foreach (XElement e in x.Descendants().Where(e => e.Attribute(Sources.Mark) != null && !Sources.InTemplate(e)))
+            {
+                string b = "src:" + (string)e.Attribute(Sources.Mark);
+                Check(Op.Locate(b, Op.Print(Sources.Find(l, b.Substring(4))), l) == b, "located in the same layout");
+            }
+        }
+        XElement v1 = XElement.Parse("<Xml><Widgets><Empty><Button id='a'/><Text text='t'/></Empty></Widgets></Xml>"), v2 = XElement.Parse("<Xml><Widgets><Empty><Image/><Button id='a'/><Text text='t'/></Empty></Widgets></Xml>");
+        Check(Op.Locate("src:F#0.0.0", Op.Print(Sources.Find(v1, "F#0.0.0")), v2) == "src:F#0.0.1", "an element with an id is found after the layout changed");
+        Check(Op.Locate("src:F#0.0.1", Op.Print(Sources.Find(v1, "F#0.0.1")), v2) == null, "one without an id is lost, not confused");
+
         History h = new History();
         int value = 0;
         Step step;

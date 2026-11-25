@@ -43,7 +43,7 @@ dialog::backdrop{background:#000a}.cards{display:grid;grid-template-columns:repe
 <body>
 <header>
   <b>SP2 UI Editor</b><span id="status" class="dim small"></span><span class="grow"></span>
-  <button id="pick"></button><button id="undo"></button><button id="redo"></button><button id="list"></button>
+  <button id="pick"></button><button id="undo"></button><button id="redo"></button><button id="list"></button><button id="packs"></button><button id="save" class="main"></button>
   <label class="small"><input type="checkbox" id="claude"> <span id="claudeT"></span></label>
   <select id="lang" aria-label="Language"><option value="pt">Português</option><option value="en">English</option></select>
 </header>
@@ -67,13 +67,13 @@ dialog::backdrop{background:#000a}.cards{display:grid;grid-template-columns:repe
 const T={pt:{pick:'Escolher no jogo',picking:'Clique no jogo (Esc cancela)',undo:'Desfazer',redo:'Refazer',list:'Mudanças',claude:'Claude pode editar',search:'Buscar texto ou id...',vis:'só visível',live:'imagem ao vivo',shot:'Clique na imagem para escolher um elemento',
 none:'Escolha um elemento: no jogo, na imagem ou na árvore.',basic:'Básico',adv:'Avançado',where:'De onde vem',add:'Adicionar',inside:'Dentro',after:'Depois',up:'Subir',down:'Descer',hide:'Esconder',del:'Remover',show:'Mostrar',classes:'Classes de estilo',
 parts:'Textos e partes',game:'O jogo escreve este texto enquanto roda e pode trocá-lo de novo.',tmpl:'Feito do modelo',built:'Esta tela foi montada antes do editor carregar ou por código de um mod. Reabra a tela para ver o arquivo.',inTmpl:'Vem de dentro de um modelo: outras telas usam o mesmo original. Sua mudança vale só aqui.',
-session:'Por enquanto as mudanças duram até a tela fechar.',changes:'Mudanças feitas',nothing:'Nenhuma mudança ainda.',close:'Fechar',off:'O jogo não está respondendo',offp:'Abra o SimplePlanes 2 com o plugin. Se recarregou com F6, reabra o editor.',label:'Texto',addTitle:'O que adicionar?',more:'Outros modelos desta tela',filter:'Filtrar atributos...',notExact:'desfazer pode não ser exato',
+session:'Salve para a mudança voltar quando a tela ou o jogo abrir de novo.',save:'Salvar',packs:'Pacotes',cur:'novas mudanças vão para este',usep:'Editar este',on:'ligado',newp:'Novo pacote',name:'Nome',noneP:'Nenhum pacote ainda. Crie um para salvar suas mudanças.',st:{applied:'aplicada',waiting:'espera a tela abrir',orphan:'elemento não existe mais',session:'desta sessão'},conf:'Conflitos',prob:'Problemas',folder:'Pasta dos pacotes',saved:'Salvo em',changes:'Mudanças feitas',nothing:'Nenhuma mudança ainda.',close:'Fechar',off:'O jogo não está respondendo',offp:'Abra o SimplePlanes 2 com o plugin. Se recarregou com F6, reabra o editor.',label:'Texto',addTitle:'O que adicionar?',more:'Outros modelos desta tela',filter:'Filtrar atributos...',notExact:'desfazer pode não ser exato',
 k:{header:'Seção',btn:'Botão',btns:'Linha de botões',text:'Linha com valor',para:'Parágrafo',toggle:'Liga/desliga',slider:'Controle deslizante',img:'Imagem'},
 a:{text:'Texto',richText:'Texto rico',tooltip:'Dica (descrição)',color:'Cor',visible:'Visível',width:'Largura',height:'Altura',fontSize:'Tamanho da letra',alignment:'Alinhamento',sprite:'Imagem',position:'Posição',anchor:'Âncora',opacity:'Opacidade',margin:'Margem',padding:'Espaço interno',spacing:'Espaçamento',colSpan:'Colunas (de 12)',fontStyle:'Estilo da letra',interactable:'Clicável'}},
 en:{pick:'Pick in the game',picking:'Click in the game (Esc cancels)',undo:'Undo',redo:'Redo',list:'Changes',claude:'Claude may edit',search:'Search text or id...',vis:'visible only',live:'live picture',shot:'Click the picture to pick an element',
 none:'Pick an element: in the game, on the picture or in the tree.',basic:'Basic',adv:'Advanced',where:'Where it comes from',add:'Add',inside:'Inside',after:'After',up:'Up',down:'Down',hide:'Hide',del:'Remove',show:'Show',classes:'Style classes',
 parts:'Texts and parts',game:'The game writes this text while it runs and may change it again.',tmpl:'Made from template',built:'This screen was built before the editor loaded, or by a mod\'s code. Reopen it to see its file.',inTmpl:'It comes from inside a template other screens use too. Your change only counts here.',
-session:'For now changes last until the screen closes.',changes:'Changes made',nothing:'No changes yet.',close:'Close',off:'The game is not answering',offp:'Open SimplePlanes 2 with the plugin. If you reloaded with F6, reopen the editor.',label:'Text',addTitle:'What to add?',more:'Other templates of this screen',filter:'Filter attributes...',notExact:'undo may not be exact',
+session:'Save so the change comes back when the screen or the game is opened again.',save:'Save',packs:'Packages',cur:'new changes go here',usep:'Edit this one',on:'on',newp:'New package',name:'Name',noneP:'No packages yet. Make one to save your changes.',st:{applied:'applied',waiting:'waits for its screen',orphan:'the element is gone',session:'this session'},conf:'Conflicts',prob:'Problems',folder:'Packages folder',saved:'Saved in',changes:'Changes made',nothing:'No changes yet.',close:'Close',off:'The game is not answering',offp:'Open SimplePlanes 2 with the plugin. If you reloaded with F6, reopen the editor.',label:'Text',addTitle:'What to add?',more:'Other templates of this screen',filter:'Filter attributes...',notExact:'undo may not be exact',
 k:{header:'Section',btn:'Button',btns:'Row of buttons',text:'Line with a value',para:'Paragraph',toggle:'Toggle',slider:'Slider',img:'Image'},
 a:{text:'Text',richText:'Rich text',tooltip:'Tooltip (description)',color:'Color',visible:'Visible',width:'Width',height:'Height',fontSize:'Font size',alignment:'Alignment',sprite:'Image',position:'Position',anchor:'Anchor',opacity:'Opacity',margin:'Margin',padding:'Padding',spacing:'Spacing',colSpan:'Columns (of 12)',fontStyle:'Font style',interactable:'Clickable'}}};
 const BASIC=['text','richText','tooltip','visible','color','width','height','position','anchor','fontSize','fontStyle','alignment','sprite','opacity','margin','padding','spacing','colSpan','interactable'];
@@ -91,7 +91,7 @@ async function api(path,body,raw){
 let msgTimer;function say(text,bad){const m=$('msg');m.textContent=text;m.className=bad?'bad':'';m.style.display='block';clearTimeout(msgTimer);msgTimer=setTimeout(()=>m.style.display='none',bad?6000:2500)}
 async function act(path,body){try{const r=await api(path,body);await tick();return r}catch(e){say(e.message,true)}}
 function el(tag,props,...kids){const e=document.createElement(tag);for(const k in props||{}){if(k==='cls')e.className=props[k];else if(k.startsWith('on'))e[k]=props[k];else if(k==='dis')e.disabled=props[k];else e.setAttribute(k,props[k])}for(const c of kids)if(c!=null)e.append(c);return e}
-function words(){t=T[lang];document.documentElement.lang=lang==='pt'?'pt-BR':'en';$('undo').textContent=t.undo;$('redo').textContent=t.redo;$('list').textContent=t.list;$('claudeT').textContent=t.claude;$('search').placeholder=t.search;$('visT').textContent=t.vis;$('liveT').textContent=t.live;$('shotT').textContent=t.shot;$('offT').textContent=t.off;$('offP').textContent=t.offp;$('lang').value=lang;drawProps()}
+function words(){t=T[lang];document.documentElement.lang=lang==='pt'?'pt-BR':'en';$('undo').textContent=t.undo;$('redo').textContent=t.redo;$('list').textContent=t.list;$('packs').textContent=t.packs;$('save').textContent=t.save;$('claudeT').textContent=t.claude;$('search').placeholder=t.search;$('visT').textContent=t.vis;$('liveT').textContent=t.live;$('shotT').textContent=t.shot;$('offT').textContent=t.off;$('offP').textContent=t.offp;$('lang').value=lang;drawProps()}
 
 // ---- tree ----
 const title=n=>n.text?'“'+n.text+'”':(n.id||n.template||n.type);
@@ -202,6 +202,23 @@ async function addDialog(parent,index){
 async function changes(){const list=await api('changes').catch(e=>(say(e.message,true),null));if(!list)return;const dlg=$('dlg');
   dlg.replaceChildren(el('h3',{},t.changes),list.length?el('ol',{},...list.map(s=>el('li',{},(s.by==='claude'?'Claude: ':'')+s.text+(s.exact?'':' ('+t.notExact+')')))):el('p',{cls:'dim'},t.nothing),el('button',{onclick:()=>dlg.close()},t.close));dlg.showModal()}
 
+// ---- packages ----
+async function packages(){
+  const p=await api('packages').catch(e=>(say(e.message,true),null));if(!p)return;const dlg=$('dlg');
+  const again=async(path,b)=>{if(await act(path,b))packages()};
+  const name=el('input',{placeholder:t.name,style:'flex:1'});
+  const list=p.packages.map((k,i)=>el('details',{},el('summary',{},el('b',{},k.name),' ('+k.ops.length+') ',k.name===p.current?el('span',{cls:'tag'},t.cur):''),
+    el('div',{cls:'bar'},(()=>{const c=el('input',{type:'checkbox',onchange:e=>again('package_enable',{name:k.name,on:e.target.checked})});c.checked=k.on;return el('label',{},c,' '+t.on)})(),
+      el('button',{dis:k.name===p.current,onclick:()=>again('package_use',{name:k.name})},t.usep),
+      el('button',{dis:i===0,onclick:()=>again('package_order',{name:k.name,index:i-1})},t.up),el('button',{dis:i===p.packages.length-1,onclick:()=>again('package_order',{name:k.name,index:i+1})},t.down)),
+    el('ul',{},...k.ops.map((o,n)=>el('li',{title:o.why||''},o.text+' ',el('span',{cls:'dim small'},t.st[o.state]+' '),o.state==='session'?'':el('button',{onclick:()=>again('package_drop',{name:k.name,index:n})},'✕'))))));
+  const block=(h,a)=>a.length?[el('h3',{},h),el('ul',{},...a.map(x=>el('li',{},x)))]:[];
+  dlg.replaceChildren(el('h3',{},t.packs),...(list.length?list:[el('p',{cls:'dim'},t.noneP)]),el('div',{cls:'bar'},name,el('button',{cls:'main',onclick:()=>again('package_new',{name:name.value})},t.newp)),
+    ...block(t.conf,p.conflicts),...block(t.prob,p.problems),el('p',{cls:'dim small'},t.folder+': '+p.folder),el('button',{onclick:()=>dlg.close()},t.close));
+  if(!dlg.open)dlg.showModal();
+}
+async function save(){if(!state.package){packages();return}if(await act('save'))say(t.saved+' '+state.package)}
+
 // ---- picture ----
 function placeMark(){const m=$('mark'),i=$('shot');if(!details||!details.rect||details.hidden||!i.naturalWidth){m.style.display='none';return}
   const r=details.rect,b=i.getBoundingClientRect(),o=$('shotBox').getBoundingClientRect();
@@ -217,7 +234,7 @@ async function tick(){
   try{
     state=await api('state');misses=0;$('off').style.display='none';
     $('status').textContent='SP2 '+state.game+' · '+state.scene;$('pick').textContent=state.picking?t.picking:t.pick;$('pick').className=state.picking?'on':'main';
-    $('undo').disabled=!state.done;$('redo').disabled=!state.undone;$('claude').checked=state.claudeMayEdit;
+    $('undo').disabled=!state.done;$('redo').disabled=!state.undone;$('save').textContent=t.save+(state.unsaved?' •':'');$('save').disabled=!state.unsaved;$('packs').textContent=t.packs+(state.package?': '+state.package:'');$('claude').checked=state.claudeMayEdit;
     const s=state.selectionSerial!==serial||state.selected!==sel,v=state.version!==version,sc=state.scene!==scene;
     serial=state.selectionSerial;version=state.version;scene=state.scene;sel=state.selected;
     if(s||v)await loadProps();
@@ -225,7 +242,7 @@ async function tick(){
   }catch(e){if(++misses>2&&!e.answered||e.message==='wrong key')$('off').style.display='flex'}
   ticking=false;if(again){again=false;tick()}
 }
-$('pick').onclick=()=>act('pick',{on:!state.picking});$('undo').onclick=()=>act('undo');$('redo').onclick=()=>act('redo');$('list').onclick=changes;
+$('pick').onclick=()=>act('pick',{on:!state.picking});$('undo').onclick=()=>act('undo');$('redo').onclick=()=>act('redo');$('list').onclick=changes;$('packs').onclick=packages;$('save').onclick=save;
 $('claude').onchange=e=>act('allow',{on:e.target.checked});$('lang').onchange=e=>{lang=e.target.value;store('lang',lang);words();tick()};
 $('vis').onchange=$('reload').onclick=drawTree;let st;$('search').oninput=()=>{clearTimeout(st);st=setTimeout(drawTree,250)};
 addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){if(e.key==='z'){e.preventDefault();act('undo')}if(e.key==='y'){e.preventDefault();act('redo')}}});

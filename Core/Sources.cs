@@ -129,6 +129,8 @@ namespace SP2UIEditor
         public string Author;      // "user" or "claude"
         public string Text;        // what it did, for the list of changes
         public bool Exact = true;  // does undoing it bring back exactly what there was?
+        public Op Op;              // what to save of it (null = it can only last this session)
+        public int Handle;         // the element it acts on (add: the parent)
         public Func<string> Undo;
         public Func<string> Redo;
     }
@@ -145,11 +147,23 @@ namespace SP2UIEditor
 
         public Step Add(string author, string text, Func<string> undo, Func<string> redo, bool exact = true)
         {
-            Step step = new Step { Number = next++, Author = author, Text = text, Undo = undo, Redo = redo, Exact = exact };
+            return Add(new Step { Author = author, Text = text, Undo = undo, Redo = redo, Exact = exact });
+        }
+
+        public Step Add(Step step)
+        {
+            step.Number = next++;
             done.Add(step);
             undone.Clear();
             Version++;
             return step;
+        }
+
+        public void Clear()
+        {
+            done.Clear();
+            undone.Clear();
+            Version++;
         }
 
         // A step that can't be undone (its screen is gone) leaves the list: keeping it would block the ones below it.

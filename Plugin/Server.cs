@@ -237,7 +237,7 @@ namespace SP2UIEditor
             return w;
         }
 
-        private static readonly string[] Edits = { "set", "class", "add", "move", "delete", "undo", "redo" };
+        private static readonly string[] Edits = { "set", "class", "add", "move", "delete", "undo", "redo", "save", "package_new", "package_use", "package_enable", "package_drop", "package_order" };
 
         private JToken Answer(Job job)
         {
@@ -281,6 +281,13 @@ namespace SP2UIEditor
                     return Result(LiveEditor.Move(w, b["parent"] != null ? Wanted(b, "parent") : w.Parent, (int?)b["index"] ?? -1, job.Author));
                 }
                 case "delete": return Result(LiveEditor.Delete(Wanted(b), job.Author));
+                case "packages": return Packages.Describe();
+                case "save": return Result(Packages.Save());
+                case "package_new": return Result(Packages.New((string)b["name"]));
+                case "package_use": return Result(Packages.Use((string)b["name"]));
+                case "package_enable": return Result(Packages.Enable((string)b["name"], (bool?)b["on"] ?? true));
+                case "package_drop": return Result(Packages.Drop((string)b["name"], (int?)b["index"] ?? -1));
+                case "package_order": return Result(Packages.Order((string)b["name"], (int?)b["index"] ?? 0));
                 case "undo":
                 case "redo":
                 {
@@ -313,6 +320,8 @@ namespace SP2UIEditor
                 ["done"] = LiveEditor.History.Done.Count,
                 ["undone"] = LiveEditor.History.Undone.Count,
                 ["claudeMayEdit"] = claudeMayEdit,
+                ["package"] = Packages.Current != null ? Packages.Current.Name : null,
+                ["unsaved"] = Packages.Unsaved,
                 ["screen"] = new JObject { ["w"] = Screen.width, ["h"] = Screen.height },
             };
         }
